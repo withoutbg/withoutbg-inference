@@ -43,10 +43,14 @@ jobs:
           files: docker-bake.hcl
           push: true
           set: |
-            service-cpu.tags=${{ env.IMAGE_PREFIX }}-service-cpu:latest,${{ env.IMAGE_PREFIX }}-service-cpu:${{ steps.meta.outputs.sha_tag }}
-            service-gpu.tags=${{ env.IMAGE_PREFIX }}-service-gpu:latest,${{ env.IMAGE_PREFIX }}-service-gpu:${{ steps.meta.outputs.sha_tag }}
-            app-cpu.tags=${{ env.IMAGE_PREFIX }}-app-cpu:latest,${{ env.IMAGE_PREFIX }}-app-cpu:${{ steps.meta.outputs.sha_tag }}
-            app-gpu.tags=${{ env.IMAGE_PREFIX }}-app-gpu:latest,${{ env.IMAGE_PREFIX }}-app-gpu:${{ steps.meta.outputs.sha_tag }}
+            service-cpu.tags=${{ env.IMAGE_PREFIX }}-service-cpu:latest
+            service-cpu.tags=${{ env.IMAGE_PREFIX }}-service-cpu:${{ steps.meta.outputs.sha_tag }}
+            service-gpu.tags=${{ env.IMAGE_PREFIX }}-service-gpu:latest
+            service-gpu.tags=${{ env.IMAGE_PREFIX }}-service-gpu:${{ steps.meta.outputs.sha_tag }}
+            app-cpu.tags=${{ env.IMAGE_PREFIX }}-app-cpu:latest
+            app-cpu.tags=${{ env.IMAGE_PREFIX }}-app-cpu:${{ steps.meta.outputs.sha_tag }}
+            app-gpu.tags=${{ env.IMAGE_PREFIX }}-app-gpu:latest
+            app-gpu.tags=${{ env.IMAGE_PREFIX }}-app-gpu:${{ steps.meta.outputs.sha_tag }}
 
       - name: Push semver tags
         if: steps.meta.outputs.semver != ''
