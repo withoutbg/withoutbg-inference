@@ -1,0 +1,54 @@
+# syntax=docker/dockerfile:1
+
+ARG PRODUCT_VERSION=v3
+ARG HF_REPO=withoutbg/withoutbg-openweights-onnx
+ARG MODEL_FILE=withoutbg-openweights.onnx
+ARG MODEL_SHA256=927adb4f9a4bd498f1ea5620ae1befdcd45dc3e14b2a791f8fb48ddd69662774
+
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04 AS base-gpu
+
+ARG PRODUCT_VERSION
+ARG HF_REPO
+ARG MODEL_FILE
+ARG MODEL_SHA256
+
+ENV WITHOUTBG_PRODUCT_VERSION=${PRODUCT_VERSION} \
+    WITHOUTBG_MODEL_PATH=/opt/withoutbg/${PRODUCT_VERSION}/model/${MODEL_FILE} \
+    WITHOUTBG_ORT_PROVIDER=CUDAExecutionProvider \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+LABEL org.opencontainers.image.source="https://github.com/withoutbg/withoutbg-inference" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.documentation="https://withoutbg.com/open-weights-model" \
+      withoutbg.product_version="${PRODUCT_VERSION}" \
+      withoutbg.model_version="4.1.0" \
+      withoutbg.variant="oss" \
+      withoutbg.runtime="gpu" \
+      withoutbg.license_url="https://withoutbg.com/open-weights-model/license" \
+      withoutbg.third_party_notices="/opt/withoutbg/${PRODUCT_VERSION}/THIRD_PARTY_NOTICES.md"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-venv ca-certificates wget \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY pyproject.toml README.md ./
+COPY model/ model/
+COPY service/ service/
+COPY THIRD_PARTY_NOTICES.md /opt/withoutbg/${PRODUCT_VERSION}/THIRD_PARTY_NOTICES.md
+
+RUN pip3 install --upgrade pip && pip3 install ".[gpu]"
+
+COPY docker/scripts/download-model.sh /usr/local/bin/download-model.sh
+RUN chmod +x /usr/local/bin/download-model.sh \
+    && download-model.sh "${HF_REPO}" "${MODEL_FILE}" "${MODEL_SHA256}" \
+       "/opt/withoutbg/${PRODUCT_VERSION}/model"
+
+RUN useradd --create-home --uid 1000 withoutbg \
+    && chown -R withoutbg:withoutbg /opt/withoutbg
+
+USER withoutbg

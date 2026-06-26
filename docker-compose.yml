@@ -1,0 +1,40 @@
+services:
+  service-cpu:
+    image: withoutbg-openweights-v3-service-cpu
+    pull_policy: never
+    ports:
+      - "8000:8000"
+
+  app-cpu:
+    image: withoutbg-openweights-v3-app-cpu
+    pull_policy: never
+    ports:
+      - "8080:8080"
+
+  service-gpu:
+    image: withoutbg-openweights-v3-service-gpu
+    profiles: [gpu]
+    pull_policy: never
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  app-gpu:
+    image: withoutbg-openweights-v3-app-gpu
+    profiles: [gpu]
+    pull_policy: never
+    ports:
+      - "8080:8080"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

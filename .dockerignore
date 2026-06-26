@@ -1,0 +1,12 @@
+ui/.next
+ui/node_modules
+ui/.git
+**/__pycache__
+**/*.pyc
+.git
+.cursor
+*.md
+!README.md
+!THIRD_PARTY_NOTICES.md
+withoutbg-onnx.md
+reference-links.md

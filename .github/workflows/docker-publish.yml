@@ -1,0 +1,63 @@
+name: Docker publish
+
+on:
+  push:
+    branches: [main]
+    tags: ["v3.*"]
+
+concurrency:
+  group: docker-publish-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PRODUCT_VERSION: v3
+  IMAGE_PREFIX: withoutbg/withoutbg-openweights-v3
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker meta
+        id: meta
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            SEMVER="${GITHUB_REF_NAME#v}"
+            echo "semver=${SEMVER}" >> "$GITHUB_OUTPUT"
+          fi
+          echo "sha_tag=sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Bake and push
+        uses: docker/bake-action@v6
+        with:
+          files: docker-bake.hcl
+          push: true
+          set: |
+            *.PRODUCT_VERSION=${{ env.PRODUCT_VERSION }}
+            service-cpu.tags=${{ env.IMAGE_PREFIX }}-service-cpu:latest,${{ env.IMAGE_PREFIX }}-service-cpu:${{ steps.meta.outputs.sha_tag }}
+            service-gpu.tags=${{ env.IMAGE_PREFIX }}-service-gpu:latest,${{ env.IMAGE_PREFIX }}-service-gpu:${{ steps.meta.outputs.sha_tag }}
+            app-cpu.tags=${{ env.IMAGE_PREFIX }}-app-cpu:latest,${{ env.IMAGE_PREFIX }}-app-cpu:${{ steps.meta.outputs.sha_tag }}
+            app-gpu.tags=${{ env.IMAGE_PREFIX }}-app-gpu:latest,${{ env.IMAGE_PREFIX }}-app-gpu:${{ steps.meta.outputs.sha_tag }}
+
+      - name: Push semver tags
+        if: steps.meta.outputs.semver != ''
+        uses: docker/bake-action@v6
+        with:
+          files: docker-bake.hcl
+          push: true
+          set: |
+            *.PRODUCT_VERSION=${{ env.PRODUCT_VERSION }}
+            service-cpu.tags=${{ env.IMAGE_PREFIX }}-service-cpu:${{ steps.meta.outputs.semver }}
+            service-gpu.tags=${{ env.IMAGE_PREFIX }}-service-gpu:${{ steps.meta.outputs.semver }}
+            app-cpu.tags=${{ env.IMAGE_PREFIX }}-app-cpu:${{ steps.meta.outputs.semver }}
+            app-gpu.tags=${{ env.IMAGE_PREFIX }}-app-gpu:${{ steps.meta.outputs.semver }}

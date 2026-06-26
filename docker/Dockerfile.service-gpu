@@ -1,0 +1,21 @@
+# syntax=docker/dockerfile:1
+
+ARG PRODUCT_VERSION=v3
+
+FROM withoutbg-openweights-${PRODUCT_VERSION}-base-gpu
+
+USER root
+
+COPY docker/scripts/start-service.sh /usr/local/bin/start-service.sh
+RUN chmod +x /usr/local/bin/start-service.sh \
+    && apt-get update && apt-get install -y --no-install-recommends wget \
+    && rm -rf /var/lib/apt/lists/*
+
+USER withoutbg
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:8000/health || exit 1
+
+ENTRYPOINT ["/usr/local/bin/start-service.sh"]

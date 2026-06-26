@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.venv/
+venv/
+
+# Model weights (downloaded at Docker build from Hugging Face)
+*.onnx
+
+# OS / editor
+.DS_Store
+.cursor/
+
+# Local notes (not needed in repo)
+withoutbg-onnx.md
+reference-links.md

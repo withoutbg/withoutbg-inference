@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "withoutbg-openweights"
+version = "3.0.0"
+description = "withoutBG open weights v3 ONNX inference service"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "fastapi>=0.115.0",
+    "numpy>=1.26.0",
+    "pillow>=10.0.0",
+    "python-multipart>=0.0.9",
+    "uvicorn[standard]>=0.32.0",
+]
+
+[project.optional-dependencies]
+cpu = ["onnxruntime==1.20.1"]
+gpu = ["onnxruntime-gpu==1.20.1"]
+
+[tool.setuptools]
+packages = ["withoutbg_openweights", "withoutbg_api", "withoutbg_api.routes"]
+
+[tool.setuptools.package-dir]
+withoutbg_openweights = "model/withoutbg_openweights"
+withoutbg_api = "service/withoutbg_api"

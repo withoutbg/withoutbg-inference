@@ -1,0 +1,233 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #171717;
+}
+
+.dark {
+  --foreground: #ededed;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Checkerboard pattern for transparent backgrounds */
+.bg-checker {
+  background-image: linear-gradient(45deg, rgba(0, 0, 0, 0.12) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(0, 0, 0, 0.12) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(0, 0, 0, 0.12) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(0, 0, 0, 0.12) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+.dark .bg-checker {
+  background-image: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.25) 25%,
+      transparent 25%
+    ),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.25) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.25) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.25) 75%);
+}
+
+/* Typography utilities */
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* Primary action button (e.g. Star CTA) */
+.btn-primary {
+  @apply bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white;
+}
+
+/* Focus ring */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:focus:ring-gray-300 dark:focus:ring-offset-gray-900;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+::selection {
+  background-color: rgba(0, 0, 0, 0.12);
+  color: inherit;
+}
+
+.dark ::selection {
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+/* ---------------------------------------------------------------------------
+   Background-removal processing animation
+   Used by ProcessingPreview while processing is in flight.
+--------------------------------------------------------------------------- */
+
+@keyframes wbg-scan {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes wbg-edge-glow {
+  0%,
+  100% {
+    box-shadow: inset 0 0 16px rgba(167, 123, 255, 0.18);
+  }
+  50% {
+    box-shadow: inset 0 0 32px rgba(167, 123, 255, 0.42);
+  }
+}
+
+@keyframes wbg-dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes wbg-result-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.wbg-scan-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(167, 123, 255, 0.85) 50%,
+    transparent 100%
+  );
+  box-shadow: 0 0 14px rgba(167, 123, 255, 0.65),
+    0 0 28px rgba(167, 123, 255, 0.3);
+  will-change: left, opacity;
+}
+
+.wbg-edge-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 0 16px rgba(167, 123, 255, 0.18);
+}
+
+.dark .wbg-scan-line {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(196, 181, 253, 0.9) 50%,
+    transparent 100%
+  );
+  box-shadow: 0 0 14px rgba(167, 123, 255, 0.75),
+    0 0 28px rgba(124, 58, 237, 0.45);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .wbg-scan-line {
+    animation: wbg-scan 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .wbg-edge-glow {
+    animation: wbg-edge-glow 2.4s ease-in-out infinite;
+  }
+  .wbg-dot-pulse {
+    animation: wbg-dot-pulse 1.4s ease-in-out infinite;
+  }
+  .wbg-result-in {
+    animation: wbg-result-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wbg-scan-line {
+    display: none;
+  }
+  .wbg-edge-glow {
+    box-shadow: inset 0 0 16px rgba(167, 123, 255, 0.25);
+  }
+}
+
+/* Star conversion prompt — elevates header Star button above overlay */
+header.star-prompt-active {
+  position: relative;
+  z-index: 70;
+}
+
+#github-star-button.star-prompt-highlight {
+  box-shadow:
+    0 0 0 3px rgb(250 204 21),
+    0 0 24px rgba(250, 204, 21, 0.5);
+  animation: star-prompt-pulse 2s ease-in-out infinite;
+}
+
+@keyframes star-prompt-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px rgb(250 204 21),
+      0 0 24px rgba(250, 204, 21, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px rgb(250 204 21),
+      0 0 32px rgba(250, 204, 21, 0.65);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #github-star-button.star-prompt-highlight {
+    animation: none;
+  }
+}
