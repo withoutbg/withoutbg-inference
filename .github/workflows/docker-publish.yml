@@ -63,3 +63,31 @@ jobs:
             service-gpu.tags=${{ env.IMAGE_PREFIX }}-service-gpu:${{ steps.meta.outputs.semver }}
             app-cpu.tags=${{ env.IMAGE_PREFIX }}-app-cpu:${{ steps.meta.outputs.semver }}
             app-gpu.tags=${{ env.IMAGE_PREFIX }}-app-gpu:${{ steps.meta.outputs.semver }}
+
+  update-dockerhub-descriptions:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: service-cpu
+            short-description: Self-hosted withoutBG v3 background removal API (CPU, ONNX, FastAPI).
+          - image: service-gpu
+            short-description: Self-hosted withoutBG v3 background removal API (GPU, CUDA, FastAPI).
+          - image: app-cpu
+            short-description: Self-hosted withoutBG background removal web app + API (CPU, open weights v3).
+          - image: app-gpu
+            short-description: Self-hosted withoutBG background removal web app + API (GPU, open weights v3).
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update Docker Hub description
+        uses: peter-evans/dockerhub-description@v5
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: withoutbg/withoutbg-openweights-v3-${{ matrix.image }}
+          readme-filepath: ./docker/hub/${{ matrix.image }}.md
+          short-description: ${{ matrix.short-description }}
+          enable-url-completion: true
