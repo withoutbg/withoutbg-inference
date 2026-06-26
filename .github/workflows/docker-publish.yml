@@ -43,7 +43,6 @@ jobs:
           files: docker-bake.hcl
           push: true
           set: |
-            *.PRODUCT_VERSION=${{ env.PRODUCT_VERSION }}
             service-cpu.tags=${{ env.IMAGE_PREFIX }}-service-cpu:latest,${{ env.IMAGE_PREFIX }}-service-cpu:${{ steps.meta.outputs.sha_tag }}
             service-gpu.tags=${{ env.IMAGE_PREFIX }}-service-gpu:latest,${{ env.IMAGE_PREFIX }}-service-gpu:${{ steps.meta.outputs.sha_tag }}
             app-cpu.tags=${{ env.IMAGE_PREFIX }}-app-cpu:latest,${{ env.IMAGE_PREFIX }}-app-cpu:${{ steps.meta.outputs.sha_tag }}
@@ -56,7 +55,6 @@ jobs:
           files: docker-bake.hcl
           push: true
           set: |
-            *.PRODUCT_VERSION=${{ env.PRODUCT_VERSION }}
             service-cpu.tags=${{ env.IMAGE_PREFIX }}-service-cpu:${{ steps.meta.outputs.semver }}
             service-gpu.tags=${{ env.IMAGE_PREFIX }}-service-gpu:${{ steps.meta.outputs.semver }}
             app-cpu.tags=${{ env.IMAGE_PREFIX }}-app-cpu:${{ steps.meta.outputs.semver }}
