@@ -11,6 +11,7 @@ venv/
 
 # Model weights (downloaded at Docker build from Hugging Face)
 *.onnx
+.cache/
 
 # OS / editor
 .DS_Store

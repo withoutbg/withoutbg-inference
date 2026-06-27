@@ -53,11 +53,11 @@ def _resolve_binary_output(output: str) -> str:
     raise ValueError("Query param 'output' must be 'cutout' or 'matte'.")
 
 
-@router.post("/remove-background")
+@router.post("/remove-background", response_model=None)
 async def remove_background(
     request: Request,
     output: str = Query(default="cutout"),
-) -> RemoveBackgroundResponse | Response:
+):
     runtime = request.app.state.runtime
     content_type = request.headers.get("content-type", "")
     is_json_request = "application/json" in content_type

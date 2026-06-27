@@ -1,0 +1,20 @@
+# Local development: hot reload + cached model (no rebuild on code changes).
+#
+#   ./scripts/dev-download-model.sh   # once
+#   docker compose -f docker-compose.dev.yml up --build
+#
+# Prefer native dev when possible: ./scripts/dev-api.sh (faster startup).
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./model:/app/model
+      - ./service:/app/service
+      - ./.cache/model:/model:ro
+    environment:
+      WITHOUTBG_MODEL_PATH: /model/withoutbg-openweights.onnx
