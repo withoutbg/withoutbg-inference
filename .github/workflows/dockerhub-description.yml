@@ -1,0 +1,41 @@
+name: Docker Hub descriptions
+
+# Updating repo README/short description requires a Docker Hub PAT with
+# Read + Write + Delete scope (admin). Push-only tokens get 403 Forbidden.
+# Set DOCKERHUB_DESCRIPTION_TOKEN in GitHub repo secrets.
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches: [main]
+    paths:
+      - "docker/hub/**"
+      - ".github/workflows/dockerhub-description.yml"
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: service-cpu
+            short-description: Self-hosted withoutBG v3 background removal API (CPU, ONNX, FastAPI).
+          - image: service-gpu
+            short-description: Self-hosted withoutBG v3 background removal API (GPU, CUDA, FastAPI).
+          - image: app-cpu
+            short-description: Self-hosted withoutBG background removal web app + API (CPU, open weights v3).
+          - image: app-gpu
+            short-description: Self-hosted withoutBG background removal web app + API (GPU, open weights v3).
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update Docker Hub description
+        uses: peter-evans/dockerhub-description@v5
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_DESCRIPTION_TOKEN }}
+          repository: withoutbg/withoutbg-openweights-v3-${{ matrix.image }}
+          readme-filepath: ./docker/hub/${{ matrix.image }}.md
+          short-description: ${{ matrix.short-description }}
+          enable-url-completion: true
