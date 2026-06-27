@@ -14,7 +14,7 @@ import numpy as np
 from PIL import Image
 
 from withoutbg_openweights.config import ModelConfig, load_config
-from withoutbg_openweights.postprocess import image_to_data_url, postprocess_outputs
+from withoutbg_openweights.postprocess import postprocess_outputs
 from withoutbg_openweights.preprocess import preprocess_image
 
 logger = logging.getLogger(__name__)
@@ -22,9 +22,17 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class InferenceResult:
-    processed_data_url: str
-    alpha_matte_data_url: str
+    cutout: Image.Image
+    matte: Image.Image
     latency_ms: int
+
+    @property
+    def processed_data_url(self) -> str:
+        return image_to_data_url(self.cutout)
+
+    @property
+    def alpha_matte_data_url(self) -> str:
+        return image_to_data_url(self.matte)
 
 
 class InferenceRuntime:
@@ -92,11 +100,7 @@ class InferenceRuntime:
             )
 
         latency_ms = int((time.perf_counter() - start) * 1000)
-        return InferenceResult(
-            processed_data_url=image_to_data_url(cutout),
-            alpha_matte_data_url=image_to_data_url(matte),
-            latency_ms=latency_ms,
-        )
+        return InferenceResult(cutout=cutout, matte=matte, latency_ms=latency_ms)
 
     def infer_from_bytes(self, data: bytes) -> InferenceResult:
         image = Image.open(io.BytesIO(data))

@@ -16,16 +16,25 @@ Health check: `http://localhost:8000/health`
 |----------|--------|-------------|
 | `/health` | GET | Liveness probe |
 | `/ready` | GET | Readiness probe (model loaded) |
-| `/v1/remove-background` | POST | Remove image background |
+| `/v1/remove-background` | POST | Remove image background (JSON or raw image body) |
 | `/v1/licenses` | GET | Model and dependency licenses |
 | `/docs` | GET | OpenAPI / Swagger UI |
 
-Example:
+Example (JSON — web UI and scripting):
 
 ```bash
 curl -X POST http://localhost:8000/v1/remove-background \
   -H "Content-Type: application/json" \
   -d '{"image":"<base64-encoded-image>"}'
+```
+
+Example (raw PNG — GIMP plugin and other local clients):
+
+```bash
+curl -X POST "http://localhost:8000/v1/remove-background?output=matte" \
+  -H "Content-Type: image/png" \
+  --data-binary @photo.png \
+  -o matte.png
 ```
 
 ## Related images

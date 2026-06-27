@@ -35,11 +35,15 @@ def matte_from_alpha(alpha: Image.Image) -> Image.Image:
 
 
 def image_to_data_url(image: Image.Image, fmt: str = "PNG") -> str:
-    buffer = io.BytesIO()
-    image.save(buffer, format=fmt)
-    encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
+    encoded = base64.b64encode(image_to_png_bytes(image, fmt)).decode("ascii")
     mime = "image/png" if fmt.upper() == "PNG" else f"image/{fmt.lower()}"
     return f"data:{mime};base64,{encoded}"
+
+
+def image_to_png_bytes(image: Image.Image, fmt: str = "PNG") -> bytes:
+    buffer = io.BytesIO()
+    image.save(buffer, format=fmt)
+    return buffer.getvalue()
 
 
 def postprocess_outputs(
