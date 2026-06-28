@@ -2,8 +2,8 @@
 
 ARG PRODUCT_VERSION=v3
 ARG HF_REPO=withoutbg/withoutbg-openweights-onnx
-ARG MODEL_FILE=withoutbg-openweights.onnx
-ARG MODEL_SHA256=927adb4f9a4bd498f1ea5620ae1befdcd45dc3e14b2a791f8fb48ddd69662774
+ARG MODEL_FILE=withoutbg-open-weights.onnx
+ARG MODEL_SHA256=7007809c1bdfb735e30ee2456664a4676ca64112d1dd2e1237c530804673dd12
 
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS model-assets
 ARG HF_REPO

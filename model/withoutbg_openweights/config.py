@@ -12,7 +12,7 @@ DEFAULT_PRODUCT_VERSION = "v3"
 
 
 def _default_model_path(product_version: str) -> Path:
-    return Path(f"/opt/withoutbg/{product_version}/model/withoutbg-openweights.onnx")
+    return Path(f"/opt/withoutbg/{product_version}/model/withoutbg-open-weights.onnx")
 
 
 @dataclass(frozen=True)

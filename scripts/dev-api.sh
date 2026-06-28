@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MODEL_PATH="$ROOT/.cache/model/withoutbg-openweights.onnx"
+MODEL_PATH="$ROOT/.cache/model/withoutbg-open-weights.onnx"
 VENV="$ROOT/.venv"
 
 if [ ! -f "$MODEL_PATH" ]; then
