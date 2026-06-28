@@ -10,6 +10,10 @@ docker run --rm -p 8000:8000 withoutbg/withoutbg-openweights-v3-service-cpu:late
 
 Health check: `http://localhost:8000/health`
 
+## Platforms
+
+Published for **linux/amd64** and **linux/arm64**. Docker pulls the matching architecture automatically (Intel/AMD, Apple Silicon, AWS Graviton, etc.).
+
 ## API
 
 | Endpoint | Method | Description |

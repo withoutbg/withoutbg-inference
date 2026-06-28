@@ -12,6 +12,10 @@ docker run --rm --gpus all -p 8000:8000 withoutbg/withoutbg-openweights-v3-servi
 
 Health check: `http://localhost:8000/health`
 
+## Platforms
+
+Published for **linux/amd64** only (NVIDIA CUDA on x86_64).
+
 ## API
 
 | Endpoint | Method | Description |

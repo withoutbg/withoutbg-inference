@@ -13,6 +13,8 @@ Docker images and FastAPI service for the withoutBG open weights ONNX model.
 
 Docker Hub: `withoutbg/withoutbg-openweights-v3-*`
 
+CPU images are published for **linux/amd64** and **linux/arm64** (Intel/AMD and Apple Silicon / ARM servers). GPU images are **linux/amd64** only (NVIDIA CUDA).
+
 ## Build
 
 ```bash
@@ -23,6 +25,12 @@ Build a single image:
 
 ```bash
 docker buildx bake -f docker-bake.hcl app-cpu
+```
+
+Build for one platform locally (faster on Apple Silicon):
+
+```bash
+docker buildx bake -f docker-bake.hcl app-cpu --set '*.platform=linux/arm64'
 ```
 
 ## Run

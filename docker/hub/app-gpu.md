@@ -14,6 +14,10 @@ Open `http://localhost:8080` in your browser.
 
 The bundled API is available at `http://localhost:8080/api` (proxied to the internal FastAPI service).
 
+## Platforms
+
+Published for **linux/amd64** only (NVIDIA CUDA on x86_64).
+
 ## What's included
 
 - Drag-and-drop web UI for background removal

@@ -2,6 +2,14 @@ variable "PRODUCT_VERSION" {
   default = "v3"
 }
 
+variable "PLATFORMS_CPU" {
+  default = ["linux/amd64", "linux/arm64"]
+}
+
+variable "PLATFORMS_GPU" {
+  default = ["linux/amd64"]
+}
+
 group "default" {
   targets = ["service-cpu", "service-gpu", "app-cpu", "app-gpu"]
 }
@@ -31,6 +39,7 @@ target "base-gpu" {
 target "service-cpu" {
   dockerfile = "docker/Dockerfile.service-cpu"
   context = "."
+  platforms = PLATFORMS_CPU
   contexts = {
     "withoutbg-openweights-${PRODUCT_VERSION}-base-cpu" = "target:base-cpu"
   }
@@ -45,6 +54,7 @@ target "service-cpu" {
 target "service-gpu" {
   dockerfile = "docker/Dockerfile.service-gpu"
   context = "."
+  platforms = PLATFORMS_GPU
   contexts = {
     "withoutbg-openweights-${PRODUCT_VERSION}-base-gpu" = "target:base-gpu"
   }
@@ -59,6 +69,7 @@ target "service-gpu" {
 target "app-cpu" {
   dockerfile = "docker/Dockerfile.app-cpu"
   context = "."
+  platforms = PLATFORMS_CPU
   contexts = {
     "withoutbg-openweights-${PRODUCT_VERSION}-base-cpu" = "target:base-cpu"
   }
@@ -73,6 +84,7 @@ target "app-cpu" {
 target "app-gpu" {
   dockerfile = "docker/Dockerfile.app-gpu"
   context = "."
+  platforms = PLATFORMS_GPU
   contexts = {
     "withoutbg-openweights-${PRODUCT_VERSION}-base-gpu" = "target:base-gpu"
   }

@@ -16,7 +16,7 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
 
@@ -29,6 +29,8 @@ jobs:
             echo "semver=${SEMVER}" >> "$GITHUB_OUTPUT"
           fi
           echo "sha_tag=sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@v3
 
       - uses: docker/setup-buildx-action@v3
 
@@ -63,6 +65,30 @@ jobs:
             service-gpu.tags=${{ env.IMAGE_PREFIX }}-service-gpu:${{ steps.meta.outputs.semver }}
             app-cpu.tags=${{ env.IMAGE_PREFIX }}-app-cpu:${{ steps.meta.outputs.semver }}
             app-gpu.tags=${{ env.IMAGE_PREFIX }}-app-gpu:${{ steps.meta.outputs.semver }}
+
+      - name: Verify published platforms
+        run: |
+          set -euo pipefail
+          verify_platforms() {
+            local image="$1"
+            shift
+            local manifest platforms missing=0
+            manifest="$(docker buildx imagetools inspect "${image}")"
+            platforms="$(echo "${manifest}" | awk '/Platform:/ {print $2}' | sort -u)"
+            echo "${image}:"
+            echo "${manifest}" | awk '/Platform:/ {print "  " $0}'
+            for want in "$@"; do
+              if ! echo "${platforms}" | grep -qx "${want}"; then
+                echo "  missing platform ${want}" >&2
+                missing=1
+              fi
+            done
+            return "${missing}"
+          }
+          verify_platforms "${{ env.IMAGE_PREFIX }}-app-cpu:latest" linux/amd64 linux/arm64
+          verify_platforms "${{ env.IMAGE_PREFIX }}-service-cpu:latest" linux/amd64 linux/arm64
+          verify_platforms "${{ env.IMAGE_PREFIX }}-app-gpu:latest" linux/amd64
+          verify_platforms "${{ env.IMAGE_PREFIX }}-service-gpu:latest" linux/amd64
 
   update-dockerhub-descriptions:
     needs: build-and-push

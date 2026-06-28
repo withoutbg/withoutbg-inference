@@ -12,6 +12,10 @@ Open `http://localhost:8080` in your browser.
 
 The bundled API is available at `http://localhost:8080/api` (proxied to the internal FastAPI service).
 
+## Platforms
+
+Published for **linux/amd64** and **linux/arm64**. Docker pulls the matching architecture automatically (Intel/AMD, Apple Silicon, AWS Graviton, etc.).
+
 ## What's included
 
 - Drag-and-drop web UI for background removal
