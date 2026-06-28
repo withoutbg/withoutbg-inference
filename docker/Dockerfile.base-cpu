@@ -5,6 +5,16 @@ ARG HF_REPO=withoutbg/withoutbg-openweights-onnx
 ARG MODEL_FILE=withoutbg-openweights.onnx
 ARG MODEL_SHA256=927adb4f9a4bd498f1ea5620ae1befdcd45dc3e14b2a791f8fb48ddd69662774
 
+FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS model-assets
+ARG HF_REPO
+ARG MODEL_FILE
+ARG MODEL_SHA256
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates wget \
+    && rm -rf /var/lib/apt/lists/*
+COPY docker/scripts/download-model.sh /usr/local/bin/download-model.sh
+RUN chmod +x /usr/local/bin/download-model.sh \
+    && download-model.sh "${HF_REPO}" "${MODEL_FILE}" "${MODEL_SHA256}" "/model"
+
 FROM python:3.12-slim-bookworm AS base-cpu
 
 ARG PRODUCT_VERSION
@@ -40,10 +50,7 @@ COPY THIRD_PARTY_NOTICES.md /opt/withoutbg/${PRODUCT_VERSION}/THIRD_PARTY_NOTICE
 
 RUN pip install --upgrade pip && pip install ".[cpu]"
 
-COPY docker/scripts/download-model.sh /usr/local/bin/download-model.sh
-RUN chmod +x /usr/local/bin/download-model.sh \
-    && download-model.sh "${HF_REPO}" "${MODEL_FILE}" "${MODEL_SHA256}" \
-       "/opt/withoutbg/${PRODUCT_VERSION}/model"
+COPY --from=model-assets /model/ /opt/withoutbg/${PRODUCT_VERSION}/model/
 
 RUN useradd --create-home --uid 1000 withoutbg \
     && chown -R withoutbg:withoutbg /opt/withoutbg
