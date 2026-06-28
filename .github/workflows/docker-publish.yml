@@ -45,6 +45,7 @@ jobs:
           files: docker-bake.hcl
           push: true
           set: |
+            model-assets.args.HF_TOKEN=${{ secrets.HF_TOKEN }}
             service-cpu.tags=${{ env.IMAGE_PREFIX }}-service-cpu:latest
             service-cpu.tags=${{ env.IMAGE_PREFIX }}-service-cpu:${{ steps.meta.outputs.sha_tag }}
             service-gpu.tags=${{ env.IMAGE_PREFIX }}-service-gpu:latest
@@ -61,6 +62,7 @@ jobs:
           files: docker-bake.hcl
           push: true
           set: |
+            model-assets.args.HF_TOKEN=${{ secrets.HF_TOKEN }}
             service-cpu.tags=${{ env.IMAGE_PREFIX }}-service-cpu:${{ steps.meta.outputs.semver }}
             service-gpu.tags=${{ env.IMAGE_PREFIX }}-service-gpu:${{ steps.meta.outputs.semver }}
             app-cpu.tags=${{ env.IMAGE_PREFIX }}-app-cpu:${{ steps.meta.outputs.semver }}

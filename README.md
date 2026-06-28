@@ -33,6 +33,8 @@ Build for one platform locally (faster on Apple Silicon):
 docker buildx bake -f docker-bake.hcl app-cpu --set '*.platform=linux/arm64'
 ```
 
+CI downloads the ~500 MB model once via `huggingface_hub`. Add a [`HF_TOKEN`](https://huggingface.co/settings/tokens) repository secret for reliable Hugging Face downloads from GitHub Actions.
+
 ## Run
 
 ```bash

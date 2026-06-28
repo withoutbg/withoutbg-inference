@@ -10,18 +10,52 @@ variable "PLATFORMS_GPU" {
   default = ["linux/amd64"]
 }
 
+variable "HF_REPO" {
+  default = "withoutbg/withoutbg-openweights-onnx"
+}
+
+variable "MODEL_FILE" {
+  default = "withoutbg-open-weights.onnx"
+}
+
+variable "MODEL_SHA256" {
+  default = "7007809c1bdfb735e30ee2456664a4676ca64112d1dd2e1237c530804673dd12"
+}
+
+variable "HF_TOKEN" {
+  default = ""
+}
+
 group "default" {
   targets = ["service-cpu", "service-gpu", "app-cpu", "app-gpu"]
+}
+
+target "model-assets" {
+  dockerfile = "docker/Dockerfile.model-assets"
+  context = "."
+  platforms = ["linux/amd64"]
+  args = {
+    HF_REPO = HF_REPO
+    MODEL_FILE = MODEL_FILE
+    MODEL_SHA256 = MODEL_SHA256
+    HF_TOKEN = HF_TOKEN
+  }
+  cache-from = ["type=gha,scope=model-assets-${PRODUCT_VERSION}"]
+  cache-to   = ["type=gha,mode=max,scope=model-assets-${PRODUCT_VERSION}"]
 }
 
 target "base-cpu" {
   dockerfile = "docker/Dockerfile.base-cpu"
   context = "."
   tags = ["withoutbg-openweights-${PRODUCT_VERSION}-base-cpu"]
+  contexts = {
+    model-assets = "target:model-assets"
+  }
   cache-from = ["type=gha,scope=base-cpu-${PRODUCT_VERSION}"]
   cache-to   = ["type=gha,mode=max,scope=base-cpu-${PRODUCT_VERSION}"]
   args = {
     PRODUCT_VERSION = PRODUCT_VERSION
+    MODEL_FILE = MODEL_FILE
   }
 }
 
@@ -29,10 +63,14 @@ target "base-gpu" {
   dockerfile = "docker/Dockerfile.base-gpu"
   context = "."
   tags = ["withoutbg-openweights-${PRODUCT_VERSION}-base-gpu"]
+  contexts = {
+    model-assets = "target:model-assets"
+  }
   cache-from = ["type=gha,scope=base-gpu-${PRODUCT_VERSION}"]
   cache-to   = ["type=gha,mode=max,scope=base-gpu-${PRODUCT_VERSION}"]
   args = {
     PRODUCT_VERSION = PRODUCT_VERSION
+    MODEL_FILE = MODEL_FILE
   }
 }
 
