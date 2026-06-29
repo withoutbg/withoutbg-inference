@@ -19,7 +19,7 @@ variable "MODEL_FILE" {
 }
 
 variable "MODEL_SHA256" {
-  default = "7007809c1bdfb735e30ee2456664a4676ca64112d1dd2e1237c530804673dd12"
+  default = "7873ec427ac6928bc91a3b6e1ddd32715a02d4b85836e78f0afacacee533b82f"
 }
 
 variable "HF_TOKEN" {

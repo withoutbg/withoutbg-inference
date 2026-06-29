@@ -1,11 +1,12 @@
 {
   "canvas_size": 1024,
+  "output_canvas_size": 768,
   "refiner_canvas_size": 768,
   "opset_version": 18,
   "precision": "fp32",
   "requested_precision": "fp32",
   "io_fp16": false,
-  "transformer_opt": true,
+  "transformer_opt": false,
   "ort_offline_opt": true,
   "ort_opt_level": "extended",
   "variant": "oss",
@@ -22,11 +23,11 @@
   "output_shape": [
     1,
     1,
-    1024,
-    1024
+    768,
+    768
   ],
   "size_mb": 495.22,
-  "sha256": "7007809c1bdfb735e30ee2456664a4676ca64112d1dd2e1237c530804673dd12",
-  "mae": 6.625039532082155e-06,
-  "max_abs": 0.019832313060760498
+  "sha256": "7873ec427ac6928bc91a3b6e1ddd32715a02d4b85836e78f0afacacee533b82f",
+  "mae": 6.654810022155289e-06,
+  "max_abs": 0.0237768292427063
 }

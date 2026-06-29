@@ -16,5 +16,5 @@ python3 -m pip install --quiet "huggingface_hub==0.29.3"
 python3 "$ROOT/docker/scripts/download_model.py" \
   "withoutbg/withoutbg-openweights-onnx" \
   "$MODEL_FILE" \
-  "7007809c1bdfb735e30ee2456664a4676ca64112d1dd2e1237c530804673dd12" \
+  "7873ec427ac6928bc91a3b6e1ddd32715a02d4b85836e78f0afacacee533b82f" \
   "$CACHE_DIR"

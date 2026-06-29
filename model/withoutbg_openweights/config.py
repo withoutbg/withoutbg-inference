@@ -21,6 +21,7 @@ class ModelConfig:
     model_path: Path
     ort_provider: str
     canvas_size: int
+    output_canvas_size: int
     input_name: str
     output_name: str
     model_version: str
@@ -40,11 +41,15 @@ def load_config() -> ModelConfig:
     if sidecar_path.is_file():
         sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
 
+    canvas_size = int(sidecar.get("canvas_size", 1024))
+    output_canvas_size = int(sidecar.get("output_canvas_size", canvas_size))
+
     return ModelConfig(
         product_version=product_version,
         model_path=model_path,
         ort_provider=ort_provider,
-        canvas_size=int(sidecar.get("canvas_size", 1024)),
+        canvas_size=canvas_size,
+        output_canvas_size=output_canvas_size,
         input_name=str(sidecar.get("input_name", "rgb")),
         output_name=str(sidecar.get("output_name", "alpha")),
         model_version=str(sidecar.get("model_version", "unknown")),
