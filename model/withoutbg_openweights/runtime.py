@@ -14,7 +14,7 @@ import numpy as np
 from PIL import Image
 
 from withoutbg_openweights.config import ModelConfig, load_config
-from withoutbg_openweights.postprocess import postprocess_outputs
+from withoutbg_openweights.postprocess import image_to_data_url, postprocess_outputs
 from withoutbg_openweights.preprocess import preprocess_image
 
 logger = logging.getLogger(__name__)
