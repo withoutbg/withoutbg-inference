@@ -42,6 +42,13 @@ docker run --rm -p 8000:8000 withoutbg-openweights-v3-service-cpu
 docker run --rm -p 8080:8080 withoutbg-openweights-v3-app-cpu
 ```
 
+GPU images require an NVIDIA GPU and the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html):
+
+```bash
+docker run --rm --gpus all -p 8000:8000 withoutbg/withoutbg-openweights-v3-service-gpu:latest
+docker run --rm --gpus all -p 8080:8080 withoutbg/withoutbg-openweights-v3-app-gpu:latest
+```
+
 After baking, use Compose:
 
 ```bash

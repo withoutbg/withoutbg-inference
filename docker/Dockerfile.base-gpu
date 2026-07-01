@@ -35,13 +35,16 @@ WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY model/ model/
 COPY service/ service/
+COPY docker/scripts/prepare-gpu-model.py /usr/local/bin/prepare-gpu-model.py
 COPY THIRD_PARTY_NOTICES.md /opt/withoutbg/${PRODUCT_VERSION}/THIRD_PARTY_NOTICES.md
 
 RUN pip3 install --upgrade pip && pip3 install ".[gpu]"
 
 COPY --from=model-assets /model/ /opt/withoutbg/${PRODUCT_VERSION}/model/
 
-RUN useradd --create-home --uid 1000 withoutbg \
+RUN python3 /usr/local/bin/prepare-gpu-model.py \
+        "/opt/withoutbg/${PRODUCT_VERSION}/model/${MODEL_FILE}" \
+    && useradd --create-home --uid 1000 withoutbg \
     && chown -R withoutbg:withoutbg /opt/withoutbg
 
 USER withoutbg

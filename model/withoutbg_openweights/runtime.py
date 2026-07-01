@@ -8,16 +8,31 @@ import logging
 import threading
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 from PIL import Image
 
 from withoutbg_openweights.config import ModelConfig, load_config
+from withoutbg_openweights.onnx_cuda import prepare_model_for_cuda
 from withoutbg_openweights.postprocess import image_to_data_url, postprocess_outputs
 from withoutbg_openweights.preprocess import preprocess_image
 
 logger = logging.getLogger(__name__)
+
+_CUDA_PROVIDER = "CUDAExecutionProvider"
+
+
+def _assert_cuda_runtime_available() -> None:
+    if not any(Path(f"/dev/nvidia{i}").exists() for i in range(8)):
+        raise RuntimeError(
+            "CUDAExecutionProvider is configured but no NVIDIA GPU device is "
+            "visible inside the container. Start the GPU image with GPU access, "
+            "for example: docker run --rm --gpus all -p 8000:8000 "
+            "withoutbg/withoutbg-openweights-v3-service-gpu:latest "
+            "(requires the NVIDIA Container Toolkit on the host)."
+        )
 
 
 @dataclass(frozen=True)
@@ -63,6 +78,10 @@ class InferenceRuntime:
                 raise ValueError(
                     f"Model SHA256 mismatch: expected {self._config.sha256}, got {digest}"
                 )
+
+        if self._config.ort_provider == _CUDA_PROVIDER:
+            _assert_cuda_runtime_available()
+            model_path = prepare_model_for_cuda(model_path)
 
         providers = [self._config.ort_provider]
         self._session = ort.InferenceSession(str(model_path), providers=providers)

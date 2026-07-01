@@ -15,6 +15,18 @@ def _default_model_path(product_version: str) -> Path:
     return Path(f"/opt/withoutbg/{product_version}/model/withoutbg-open-weights.onnx")
 
 
+def _canonical_model_path(model_path: Path) -> Path:
+    stem = model_path.stem
+    if stem.endswith(".cuda"):
+        return model_path.with_name(f"{stem[:-5]}{model_path.suffix}")
+    return model_path
+
+
+def _sidecar_path(model_path: Path) -> Path:
+    canonical = _canonical_model_path(model_path)
+    return canonical.with_suffix(canonical.suffix + ".json")
+
+
 @dataclass(frozen=True)
 class ModelConfig:
     product_version: str
@@ -36,7 +48,7 @@ def load_config() -> ModelConfig:
     )
     ort_provider = os.getenv("WITHOUTBG_ORT_PROVIDER", "CPUExecutionProvider")
 
-    sidecar_path = model_path.with_suffix(model_path.suffix + ".json")
+    sidecar_path = _sidecar_path(model_path)
     sidecar: dict = {}
     if sidecar_path.is_file():
         sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
