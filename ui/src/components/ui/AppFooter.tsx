@@ -32,6 +32,9 @@ export function AppFooter() {
             <p className="text-sm mb-2">
               Open-source background removal. Runs locally with no usage limits.
             </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              Built with DINOv3
+            </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               {currentYear} © withoutBG
             </p>
@@ -101,7 +104,7 @@ export function AppFooter() {
                 </a>
               </li>
               <li>
-                <a href={`${SITE_URL}/open-weights-model/mac-app`} className={linkClass}>
+                <a href={`${SITE_URL}/mac`} className={linkClass}>
                   Mac App
                 </a>
               </li>

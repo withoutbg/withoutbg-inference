@@ -1,4 +1,4 @@
-"""Letterbox preprocessing for fixed 1024×1024 NCHW RGB input."""
+"""Letterbox preprocessing for fixed-size NCHW RGB input (default 448×448)."""
 
 from __future__ import annotations
 

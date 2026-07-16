@@ -33,7 +33,7 @@ Build for one platform locally (faster on Apple Silicon):
 docker buildx bake -f docker-bake.hcl app-cpu --set '*.platform=linux/arm64'
 ```
 
-CI downloads the ~500 MB model once via `huggingface_hub`. Add a [`HF_TOKEN`](https://huggingface.co/settings/tokens) repository secret for reliable Hugging Face downloads from GitHub Actions.
+CI downloads the ~455 MB model once via `huggingface_hub`. Add a [`HF_TOKEN`](https://huggingface.co/settings/tokens) repository secret for reliable Hugging Face downloads from GitHub Actions.
 
 ## Run
 
@@ -57,10 +57,10 @@ docker compose up app-cpu
 
 ## Development
 
-Production Docker images bake the ~500 MB model at build time and do not hot-reload. For day-to-day work, use native dev with a one-time model download:
+Production Docker images bake the ~455 MB model at build time and do not hot-reload. For day-to-day work, use native dev with a one-time model download:
 
 ```bash
-# 1. Download model once (~500 MB, cached in .cache/model/)
+# 1. Download model once (~455 MB, cached in .cache/model/)
 ./scripts/dev-download-model.sh
 
 # 2. API with hot reload (port 8000)
@@ -87,4 +87,4 @@ The first `docker compose -f docker-compose.dev.yml build` installs Python deps 
 
 ## License
 
-Apache-2.0 for this repository's code. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for upstream model attribution.
+Apache-2.0 for this repository's code. Built with DINOv3. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for upstream model attribution.

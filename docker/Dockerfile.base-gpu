@@ -18,12 +18,12 @@ ENV WITHOUTBG_PRODUCT_VERSION=${PRODUCT_VERSION} \
 
 LABEL org.opencontainers.image.source="https://github.com/withoutbg/withoutbg-inference" \
       org.opencontainers.image.licenses="Apache-2.0" \
-      org.opencontainers.image.documentation="https://withoutbg.com/open-weights-model" \
+      org.opencontainers.image.documentation="https://withoutbg.com/open-model" \
       withoutbg.product_version="${PRODUCT_VERSION}" \
-      withoutbg.model_version="4.1.0" \
+      withoutbg.model_version="10.0.0" \
       withoutbg.variant="oss" \
       withoutbg.runtime="gpu" \
-      withoutbg.license_url="https://withoutbg.com/open-weights-model/license" \
+      withoutbg.license_url="https://withoutbg.com/open-model/license" \
       withoutbg.third_party_notices="/opt/withoutbg/${PRODUCT_VERSION}/THIRD_PARTY_NOTICES.md"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \

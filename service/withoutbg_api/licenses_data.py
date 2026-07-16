@@ -2,7 +2,7 @@
 
 from withoutbg_api.schemas import LicenseLink, LicensesResponse, UpstreamComponent
 
-PRODUCT_LICENSE_URL = "https://withoutbg.com/open-weights-model/license"
+PRODUCT_LICENSE_URL = "https://withoutbg.com/open-model/license"
 THIRD_PARTY_NOTICES_PATH = "/opt/withoutbg/v3/THIRD_PARTY_NOTICES.md"
 
 UPSTREAM_COMPONENTS: list[UpstreamComponent] = [
@@ -21,7 +21,7 @@ UPSTREAM_COMPONENTS: list[UpstreamComponent] = [
         ],
     ),
     UpstreamComponent(
-        name="Depth Anything V2 Small",
+        name="Depth Anything V2",
         license="Apache-2.0",
         links=[
             LicenseLink(
@@ -29,18 +29,10 @@ UPSTREAM_COMPONENTS: list[UpstreamComponent] = [
                 href="https://github.com/DepthAnything/Depth-Anything-V2",
             ),
             LicenseLink(
-                label="Hugging Face",
-                href="https://huggingface.co/depth-anything/Depth-Anything-V2-Small",
+                label="Apache-2.0",
+                href="https://www.apache.org/licenses/LICENSE-2.0",
             ),
         ],
-    ),
-    UpstreamComponent(
-        name="IS-Net",
-        license="Apache-2.0 (code and evaluation metrics)",
-        links=[
-            LicenseLink(label="GitHub", href="https://github.com/xuebinqin/DIS"),
-        ],
-        note="DIS5K dataset has separate non-commercial research/education terms.",
     ),
 ]
 

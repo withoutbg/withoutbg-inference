@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Heart } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { ApiModelMenu } from "@/components/ui/ApiModelMenu";
+import { DocsMenu } from "@/components/ui/DocsMenu";
 import { OpenModelsMenu } from "@/components/ui/OpenModelsMenu";
 import { GitHubStarButton } from "@/components/conversion/GitHubStarButton";
 import { SUPPORT_URL } from "@/lib/product-links";
@@ -42,8 +43,9 @@ export function AppHeader() {
             </span>
           </div>
           <nav aria-label="Product navigation" className="flex items-center gap-1">
-            <OpenModelsMenu />
             <ApiModelMenu />
+            <OpenModelsMenu />
+            <DocsMenu />
           </nav>
         </div>
         <div className="flex items-center gap-3">

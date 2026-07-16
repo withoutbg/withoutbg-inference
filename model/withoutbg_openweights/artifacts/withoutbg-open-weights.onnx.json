@@ -1,7 +1,6 @@
 {
-  "canvas_size": 1024,
-  "output_canvas_size": 768,
-  "refiner_canvas_size": 768,
+  "canvas_size": 448,
+  "matting_input_size": 448,
   "opset_version": 18,
   "precision": "fp32",
   "requested_precision": "fp32",
@@ -10,24 +9,27 @@
   "ort_offline_opt": true,
   "ort_opt_level": "extended",
   "variant": "oss",
-  "model_version": "4.1.0",
+  "depth_variant": "dav2s",
+  "convnext_size": "base",
+  "refiner": false,
+  "model_version": "10.0.0",
   "input_name": "rgb",
   "output_name": "alpha",
   "input_dtype": "float32",
   "input_shape": [
     1,
     3,
-    1024,
-    1024
+    448,
+    448
   ],
   "output_shape": [
     1,
     1,
-    768,
-    768
+    448,
+    448
   ],
-  "size_mb": 495.22,
-  "sha256": "7873ec427ac6928bc91a3b6e1ddd32715a02d4b85836e78f0afacacee533b82f",
-  "mae": 6.654810022155289e-06,
-  "max_abs": 0.0237768292427063
+  "size_mb": 454.5,
+  "sha256": "29930e48e9d5ecc56d6486c53c35a4c1470566c2a3359fa180b08c8d3c34ef0f",
+  "mae": 3.6705664285818784e-08,
+  "max_abs": 3.0040740966796875e-05
 }

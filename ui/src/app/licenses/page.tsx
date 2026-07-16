@@ -35,7 +35,8 @@ export default function LicensesPage() {
         </h1>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
           The withoutBG open weights v3 distribution includes a compiled ONNX model
-          that encapsulates upstream components. The product is licensed under the{" "}
+          that encapsulates upstream components. Built with DINOv3. The product is
+          licensed under the{" "}
           <a href={LICENSE_URL} className={linkClassName}>
             withoutBG open weights license
           </a>

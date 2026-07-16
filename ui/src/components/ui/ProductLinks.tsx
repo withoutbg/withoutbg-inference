@@ -111,7 +111,7 @@ export function ProductLinks() {
     <div className="grid gap-6 sm:grid-cols-2">
       <section className="rounded-lg border border-gray-200 bg-wbg-surface dark:border-gray-800 dark:bg-wbg-chrome">
         <h2 className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-900 dark:border-gray-800 dark:text-gray-100">
-          Open-Weights Model
+          Open Model
         </h2>
         <div className="py-1">
           {OPEN_MODEL_SECTIONS.map((section, sectionIndex) => (
@@ -132,7 +132,7 @@ export function ProductLinks() {
 
       <section className="rounded-lg border border-gray-200 bg-wbg-surface dark:border-gray-800 dark:bg-wbg-chrome">
         <h2 className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-900 dark:border-gray-800 dark:text-gray-100">
-          API Model
+          Pro Model
         </h2>
         <div className="py-1">
           {API_MODEL_SECTIONS.map((section, sectionIndex) => (

@@ -51,6 +51,6 @@ curl -X POST "http://localhost:8000/v1/remove-background?output=matte" \
 
 ## Links
 
-- [withoutBG open weights model](https://withoutbg.com/open-weights-model)
+- [withoutBG open model](https://withoutbg.com/open-model)
 - [Source on GitHub](https://github.com/withoutbg/withoutbg-inference)
 - License: Apache-2.0 (see `/v1/licenses` in the running container)

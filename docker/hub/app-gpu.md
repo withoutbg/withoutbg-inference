@@ -34,6 +34,6 @@ Published for **linux/amd64** only (NVIDIA CUDA on x86_64).
 
 ## Links
 
-- [withoutBG open weights model](https://withoutbg.com/open-weights-model)
+- [withoutBG open model](https://withoutbg.com/open-model)
 - [Source on GitHub](https://github.com/withoutbg/withoutbg-inference)
 - License: Apache-2.0

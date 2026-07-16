@@ -1,6 +1,13 @@
 "use client";
 
-import { CreditCard, Heart, Images, Play, Store } from "lucide-react";
+import {
+  BatteryCharging,
+  Braces,
+  CreditCard,
+  Heart,
+  Images,
+  Play,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProductLinkItem } from "@/lib/product-links";
 
@@ -17,10 +24,6 @@ export function ProductLinkIcon({ item }: { item: ProductLinkItem }) {
     return <i className={`${item.icon} text-base leading-none`} aria-hidden />;
   }
 
-  if (item.lucideIcon === "store") {
-    return <Store className={iconClass(item.highlight)} aria-hidden />;
-  }
-
   if (item.lucideIcon === "images") {
     return <Images className={iconClass(item.highlight)} aria-hidden />;
   }
@@ -35,6 +38,14 @@ export function ProductLinkIcon({ item }: { item: ProductLinkItem }) {
 
   if (item.lucideIcon === "heart") {
     return <Heart className={iconClass(item.highlight)} aria-hidden />;
+  }
+
+  if (item.lucideIcon === "braces") {
+    return <Braces className={iconClass(item.highlight)} aria-hidden />;
+  }
+
+  if (item.lucideIcon === "battery-charging") {
+    return <BatteryCharging className={iconClass(item.highlight)} aria-hidden />;
   }
 
   return null;

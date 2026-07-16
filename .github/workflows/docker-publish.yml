@@ -91,6 +91,10 @@ jobs:
           verify_platforms "${{ env.IMAGE_PREFIX }}-service-cpu:latest" linux/amd64 linux/arm64
           verify_platforms "${{ env.IMAGE_PREFIX }}-app-gpu:latest" linux/amd64
           verify_platforms "${{ env.IMAGE_PREFIX }}-service-gpu:latest" linux/amd64
+          # Also ensure arm64 is not amd64 content under a linux/arm64 label.
+          python3 scripts/verify-multiarch-layers.py \
+            "${{ env.IMAGE_PREFIX }}-app-cpu:latest" \
+            "${{ env.IMAGE_PREFIX }}-service-cpu:latest"
 
   update-dockerhub-descriptions:
     needs: build-and-push

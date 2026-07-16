@@ -2,7 +2,7 @@
 
 ARG HF_REPO=withoutbg/withoutbg-openweights-onnx
 ARG MODEL_FILE=withoutbg-open-weights.onnx
-ARG MODEL_SHA256=7873ec427ac6928bc91a3b6e1ddd32715a02d4b85836e78f0afacacee533b82f
+ARG MODEL_SHA256=29930e48e9d5ecc56d6486c53c35a4c1470566c2a3359fa180b08c8d3c34ef0f
 
 FROM --platform=$BUILDPLATFORM python:3.12-slim-bookworm AS model-assets
 ARG HF_REPO

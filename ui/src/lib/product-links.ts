@@ -2,30 +2,23 @@ import { HF_MODEL_URL } from "@/lib/reference-links";
 
 export const SITE_URL = "https://withoutbg.com";
 export const LINK_URL = `${SITE_URL}/`;
-export const LICENSE_URL = `${SITE_URL}/open-weights-model/license`;
+export const LICENSE_URL = `${SITE_URL}/open-model/license`;
 export const OSS_URL = "https://github.com/withoutbg/withoutbg-inference";
 export const LEGACY_OSS_URL = "https://github.com/withoutbg/withoutbg";
-export const SUPPORT_URL = `${SITE_URL}/open-weights-model/support`;
-/** Update when the Hugging Face Space is published */
-export const HF_SPACE_URL = "https://huggingface.co/spaces/withoutbg/withoutbg";
-
-export const DOCKER_HUB_APP_CPU_URL =
-  "https://hub.docker.com/r/withoutbg/withoutbg-openweights-v3-app-cpu";
-export const DOCKER_HUB_APP_GPU_URL =
-  "https://hub.docker.com/r/withoutbg/withoutbg-openweights-v3-app-gpu";
-export const DOCKER_HUB_SERVICE_CPU_URL =
-  "https://hub.docker.com/r/withoutbg/withoutbg-openweights-v3-service-cpu";
-export const DOCKER_HUB_SERVICE_GPU_URL =
-  "https://hub.docker.com/r/withoutbg/withoutbg-openweights-v3-service-gpu";
-export const DOCKER_HUB_APP_MAC_URL = "https://hub.docker.com/r/withoutbg/app-mac";
-export const PYPI_PACKAGE_URL = "https://pypi.org/project/withoutbg/";
+export const SUPPORT_URL = `${SITE_URL}/open-model/support`;
 
 export type ProductLinkItem = {
   label: string;
   href: string | null;
   icon?: string;
   /** Lucide icon name when devicon is not used */
-  lucideIcon?: "store" | "images" | "play" | "credit-card" | "heart";
+  lucideIcon?:
+    | "images"
+    | "play"
+    | "credit-card"
+    | "heart"
+    | "braces"
+    | "battery-charging";
   current?: boolean;
   /** Hide the serving badge (compare links) */
   simple?: boolean;
@@ -40,10 +33,16 @@ export type ProductLinkSection = {
 };
 
 export const OPEN_MODEL_COMPARE_ITEMS: ProductLinkItem[] = [
-  { label: "vs remove.bg", href: `${SITE_URL}/compare/open-weights-vs-remove-bg`, simple: true },
-  { label: "vs Photoroom", href: `${SITE_URL}/compare/open-weights-vs-photoroom`, simple: true },
-  { label: "vs API Model", href: `${SITE_URL}/compare/open-weights-vs-api-model`, simple: true },
-  { label: "vs Clipping Magic", href: `${SITE_URL}/compare/open-weights-vs-clipping-magic`, simple: true },
+  {
+    label: "vs Pro Model",
+    href: `${SITE_URL}/compare/withoutbg-open-model-vs-pro-model`,
+    simple: true,
+  },
+  {
+    label: "vs Clipping Magic",
+    href: `${SITE_URL}/compare/withoutbg-open-model-vs-clipping-magic`,
+    simple: true,
+  },
 ];
 
 export const OPEN_MODEL_LEFT_SECTIONS: ProductLinkSection[] = [
@@ -52,7 +51,7 @@ export const OPEN_MODEL_LEFT_SECTIONS: ProductLinkSection[] = [
     items: [
       {
         label: "See model outputs",
-        href: `${SITE_URL}/open-weights-model/results`,
+        href: `${SITE_URL}/open-model/results`,
         lucideIcon: "images",
       },
     ],
@@ -61,14 +60,9 @@ export const OPEN_MODEL_LEFT_SECTIONS: ProductLinkSection[] = [
     label: "Hosted",
     items: [
       {
-        label: "Hugging Face Model",
+        label: "Hugging Face",
         href: HF_MODEL_URL,
-        icon: "devicon-pytorch-plain",
-      },
-      {
-        label: "Hugging Face Space",
-        href: HF_SPACE_URL,
-        icon: "devicon-pytorch-plain",
+        external: true,
       },
     ],
   },
@@ -77,24 +71,14 @@ export const OPEN_MODEL_LEFT_SECTIONS: ProductLinkSection[] = [
     items: [
       {
         label: "Python Library",
-        href: PYPI_PACKAGE_URL,
+        href: `${SITE_URL}/docs/open-model/python`,
         icon: "devicon-python-plain",
       },
       {
-        label: "Docker Web App CPU",
-        href: DOCKER_HUB_APP_CPU_URL,
+        label: "Docker",
+        href: `${SITE_URL}/docs/open-model/docker`,
         icon: "devicon-docker-plain",
         current: true,
-      },
-      {
-        label: "Docker Web App Mac",
-        href: DOCKER_HUB_APP_MAC_URL,
-        icon: "devicon-docker-plain",
-      },
-      {
-        label: "Docker Web App GPU",
-        href: DOCKER_HUB_APP_GPU_URL,
-        icon: "devicon-docker-plain",
       },
     ],
   },
@@ -103,24 +87,13 @@ export const OPEN_MODEL_LEFT_SECTIONS: ProductLinkSection[] = [
     items: [
       {
         label: "Mac Application",
-        href: `${SITE_URL}/open-weights-model/mac-app`,
+        href: `${SITE_URL}/mac`,
         icon: "devicon-apple-original",
       },
       {
         label: "GIMP Plugin",
-        href: `${SITE_URL}/open-weights-model/plugins/gimp`,
+        href: `${SITE_URL}/open-model/plugins/gimp`,
         icon: "devicon-gimp-plain",
-      },
-    ],
-  },
-  {
-    label: "Support",
-    items: [
-      {
-        label: "Donate",
-        href: SUPPORT_URL,
-        lucideIcon: "heart",
-        highlight: true,
       },
     ],
   },
@@ -143,8 +116,13 @@ export const OPEN_MODEL_SECTIONS: ProductLinkSection[] = [
 
 export const API_MODEL_COMPARE_ITEMS: ProductLinkItem[] = [
   {
-    label: "vs Open-Weight Model",
-    href: `${SITE_URL}/compare/open-weights-vs-api-model`,
+    label: "vs Open Model",
+    href: `${SITE_URL}/compare/withoutbg-open-model-vs-pro-model`,
+    simple: true,
+  },
+  {
+    label: "vs remove.bg",
+    href: `${SITE_URL}/compare/withoutbg-pro-model-vs-remove-bg`,
     simple: true,
   },
 ];
@@ -155,7 +133,7 @@ export const API_MODEL_LEFT_SECTIONS: ProductLinkSection[] = [
     items: [
       {
         label: "See model outputs",
-        href: `${SITE_URL}/api-model/results`,
+        href: `${SITE_URL}/pro-model/results`,
         lucideIcon: "images",
       },
     ],
@@ -165,7 +143,7 @@ export const API_MODEL_LEFT_SECTIONS: ProductLinkSection[] = [
     items: [
       {
         label: "API Demo",
-        href: `${SITE_URL}/api-model/remove-background`,
+        href: `${SITE_URL}/pro-model/remove-background`,
         lucideIcon: "play",
       },
     ],
@@ -175,16 +153,9 @@ export const API_MODEL_LEFT_SECTIONS: ProductLinkSection[] = [
     items: [
       {
         label: "Pricing",
-        href: `${SITE_URL}/api-model/pricing`,
+        href: `${SITE_URL}/pro-model/pricing`,
         lucideIcon: "credit-card",
       },
-    ],
-  },
-  {
-    label: "Integrations",
-    items: [
-      { label: "Figma Plugin", href: `${SITE_URL}/api-model/figma-plugin`, icon: "devicon-figma-plain" },
-      { label: "Shopify App", href: `${SITE_URL}/api-model/shopify-app`, lucideIcon: "store" },
     ],
   },
 ];
@@ -206,4 +177,71 @@ export const API_MODEL_SECTIONS: ProductLinkSection[] = [
 
 export const API_MODEL_ITEMS: ProductLinkItem[] = API_MODEL_LEFT_SECTIONS.flatMap(
   (section) => section.items
+);
+
+export const DOCS_SECTIONS: ProductLinkSection[] = [
+  {
+    label: "Pro Model",
+    items: [
+      {
+        label: "Overview",
+        href: `${SITE_URL}/docs/pro-model`,
+        icon: "devicon-openapi-plain",
+      },
+      {
+        label: "Background Removal (Binary)",
+        href: `${SITE_URL}/docs/pro-model/background-removal-binary`,
+        lucideIcon: "images",
+      },
+      {
+        label: "Background Removal (Base64)",
+        href: `${SITE_URL}/docs/pro-model/background-removal-base64`,
+        lucideIcon: "braces",
+      },
+      {
+        label: "Alpha Matte (Binary)",
+        href: `${SITE_URL}/docs/pro-model/alpha-matte-binary`,
+        lucideIcon: "images",
+      },
+      {
+        label: "Alpha Matte (Base64)",
+        href: `${SITE_URL}/docs/pro-model/alpha-matte-base64`,
+        lucideIcon: "braces",
+      },
+      {
+        label: "Credits",
+        href: `${SITE_URL}/docs/pro-model/credits`,
+        lucideIcon: "battery-charging",
+      },
+    ],
+  },
+  {
+    label: "Open Model",
+    items: [
+      {
+        label: "Overview",
+        href: `${SITE_URL}/docs/open-model`,
+        icon: "devicon-python-plain",
+      },
+      {
+        label: "Python Library",
+        href: `${SITE_URL}/docs/open-model/python`,
+        icon: "devicon-python-plain",
+      },
+      {
+        label: "Docker",
+        href: `${SITE_URL}/docs/open-model/docker`,
+        icon: "devicon-docker-plain",
+      },
+      {
+        label: "CLI",
+        href: `${SITE_URL}/docs/open-model/cli`,
+        icon: "devicon-bash-plain",
+      },
+    ],
+  },
+];
+
+export const DOCS_SECTION_COLUMNS: ProductLinkSection[][] = DOCS_SECTIONS.map(
+  (section) => [section]
 );

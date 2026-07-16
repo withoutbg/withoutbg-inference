@@ -44,8 +44,8 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Resize image to max 1024px on longest side, return data URL. */
-async function prepareImage(src: string, maxPx = 1024): Promise<{ dataUrl: string; aspectRatio: number }> {
+/** Resize image to max 448px on longest side, return data URL. */
+async function prepareImage(src: string, maxPx = 448): Promise<{ dataUrl: string; aspectRatio: number }> {
   const img = await loadImage(src);
   const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
   const w = Math.round(img.width * scale);

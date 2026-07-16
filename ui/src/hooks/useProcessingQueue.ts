@@ -48,7 +48,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 async function prepareImage(
   src: string,
-  maxPx = 1024
+  maxPx = 448
 ): Promise<{ dataUrl: string; aspectRatio: number }> {
   const img = await loadImage(src);
   const scale = Math.min(1, maxPx / Math.max(img.width, img.height));

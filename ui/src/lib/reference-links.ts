@@ -30,21 +30,15 @@ export const UPSTREAM_COMPONENTS: UpstreamComponent[] = [
     ],
   },
   {
-    name: "Depth Anything V2 Small",
+    name: "Depth Anything V2",
     license: "Apache-2.0",
     links: [
       { label: "GitHub", href: "https://github.com/DepthAnything/Depth-Anything-V2" },
       {
-        label: "Hugging Face",
-        href: "https://huggingface.co/depth-anything/Depth-Anything-V2-Small",
+        label: "Apache-2.0",
+        href: "https://www.apache.org/licenses/LICENSE-2.0",
       },
     ],
-  },
-  {
-    name: "IS-Net",
-    license: "Apache-2.0 (code and evaluation metrics)",
-    links: [{ label: "GitHub", href: "https://github.com/xuebinqin/DIS" }],
-    note: "DIS5K dataset has separate non-commercial research/education terms.",
   },
 ];
 

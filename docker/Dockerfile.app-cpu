@@ -2,7 +2,7 @@
 
 ARG PRODUCT_VERSION=v3
 
-FROM node:22-alpine AS ui-build
+FROM --platform=$BUILDPLATFORM node:22-alpine AS ui-build
 WORKDIR /ui
 COPY ui/package.json ui/package-lock.json ./
 RUN npm ci

@@ -1,15 +1,13 @@
-import { SITE_URL } from "@/lib/product-links";
-import { shellNavTrigger } from "@/lib/shell-styles";
+"use client";
+
+import { API_MODEL_SECTION_COLUMNS } from "@/lib/product-links";
+import { ProductNavMenu } from "@/components/ui/ProductNavMenu";
 
 export function ApiModelMenu() {
   return (
-    <a
-      href={SITE_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={shellNavTrigger}
-    >
-      API Model
-    </a>
+    <ProductNavMenu
+      label="Pro Model"
+      sectionColumns={API_MODEL_SECTION_COLUMNS}
+    />
   );
 }

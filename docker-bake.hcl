@@ -19,7 +19,7 @@ variable "MODEL_FILE" {
 }
 
 variable "MODEL_SHA256" {
-  default = "7873ec427ac6928bc91a3b6e1ddd32715a02d4b85836e78f0afacacee533b82f"
+  default = "29930e48e9d5ecc56d6486c53c35a4c1470566c2a3359fa180b08c8d3c34ef0f"
 }
 
 variable "HF_TOKEN" {
@@ -47,6 +47,9 @@ target "model-assets" {
 target "base-cpu" {
   dockerfile = "docker/Dockerfile.base-cpu"
   context = "."
+  # Required: otherwise bake inherits model-assets' amd64-only platform and
+  # ships amd64 binaries under a linux/arm64 manifest.
+  platforms = PLATFORMS_CPU
   tags = ["withoutbg-openweights-${PRODUCT_VERSION}-base-cpu"]
   contexts = {
     model-assets = "target:model-assets"
@@ -62,6 +65,7 @@ target "base-cpu" {
 target "base-gpu" {
   dockerfile = "docker/Dockerfile.base-gpu"
   context = "."
+  platforms = PLATFORMS_GPU
   tags = ["withoutbg-openweights-${PRODUCT_VERSION}-base-gpu"]
   contexts = {
     model-assets = "target:model-assets"
