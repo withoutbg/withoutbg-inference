@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import io
 import re
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, Response
@@ -16,6 +17,63 @@ from withoutbg_api.schemas import RemoveBackgroundRequest, RemoveBackgroundRespo
 router = APIRouter(prefix="/v1", tags=["inference"])
 
 _DATA_URL_RE = re.compile(r"^data:(?P<mime>[^;]+);base64,(?P<data>.*)$", re.DOTALL)
+
+_BINARY_SCHEMA = {"type": "string", "format": "binary"}
+
+_REMOVE_BACKGROUND_OPENAPI_EXTRA = {
+    "requestBody": {
+        "required": True,
+        "content": {
+            "image/jpeg": {"schema": _BINARY_SCHEMA},
+            "image/png": {"schema": _BINARY_SCHEMA},
+            "multipart/form-data": {
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "image": _BINARY_SCHEMA,
+                    },
+                }
+            },
+        },
+    }
+}
+
+_REMOVE_BACKGROUND_RESPONSES = {
+    200: {
+        "description": "PNG cutout or matte",
+        "content": {
+            "image/png": {"schema": _BINARY_SCHEMA},
+        },
+        "headers": {
+            "X-Latency-Ms": {
+                "description": "Server-side inference latency in milliseconds",
+                "schema": {"type": "integer"},
+            }
+        },
+    },
+    400: {
+        "description": "Invalid image input",
+        "content": {
+            "application/json": {
+                "schema": {
+                    "type": "object",
+                    "properties": {"error": {"type": "string"}},
+                }
+            }
+        },
+    },
+    503: {
+        "description": "Model not ready",
+        "content": {
+            "application/json": {
+                "schema": {
+                    "type": "object",
+                    "properties": {"error": {"type": "string"}},
+                }
+            }
+        },
+    },
+}
 
 
 def _decode_image_payload(payload: str) -> bytes:
@@ -53,10 +111,20 @@ def _resolve_binary_output(output: str) -> str:
     raise ValueError("Query param 'output' must be 'cutout' or 'matte'.")
 
 
-@router.post("/remove-background", response_model=None)
+@router.post(
+    "/remove-background",
+    summary="Remove background from an image",
+    response_class=Response,
+    response_model=None,
+    responses=_REMOVE_BACKGROUND_RESPONSES,
+    openapi_extra=_REMOVE_BACKGROUND_OPENAPI_EXTRA,
+)
 async def remove_background(
     request: Request,
-    output: str = Query(default="cutout"),
+    output: Literal["cutout", "matte"] = Query(
+        default="cutout",
+        description="PNG result kind: transparent cutout or grayscale alpha matte",
+    ),
 ):
     runtime = request.app.state.runtime
     content_type = request.headers.get("content-type", "")
@@ -78,11 +146,12 @@ async def remove_background(
                 status_code=400, detail=f"Invalid image input: {exc}"
             ) from exc
 
-        return RemoveBackgroundResponse(
+        payload = RemoveBackgroundResponse(
             processed=result.processed_data_url,
             alphaMatte=result.alpha_matte_data_url,
             latencyMs=result.latency_ms,
         )
+        return JSONResponse(content=payload.model_dump())
 
     if runtime is None or not runtime.ready:
         return _binary_error(503, "Model not ready")

@@ -20,22 +20,22 @@ Published for **linux/amd64** and **linux/arm64**. Docker pulls the matching arc
 |----------|--------|-------------|
 | `/health` | GET | Liveness probe |
 | `/ready` | GET | Readiness probe (model loaded) |
-| `/v1/remove-background` | POST | Remove image background (JSON or raw image body) |
+| `/v1/remove-background` | POST | Remove image background (raw image or multipart) |
 | `/v1/licenses` | GET | Model and dependency licenses |
 | `/docs` | GET | OpenAPI / Swagger UI |
 
-Example (JSON — web UI and scripting):
+Same input/output schema as the withoutBG Mac Local API: send a raw JPEG/PNG body (or multipart field `image`); response is `image/png` with header `X-Latency-Ms`. Use `?output=matte` for a grayscale alpha matte instead of the default cutout.
 
 ```bash
-curl -X POST http://localhost:8000/v1/remove-background \
-  -H "Content-Type: application/json" \
-  -d '{"image":"<base64-encoded-image>"}'
+curl -X POST \
+  --data-binary @photo.jpg \
+  -H "Content-Type: image/jpeg" \
+  http://127.0.0.1:8000/v1/remove-background \
+  -o result.png
 ```
 
-Example (raw PNG — GIMP plugin and other local clients):
-
 ```bash
-curl -X POST "http://localhost:8000/v1/remove-background?output=matte" \
+curl -X POST "http://127.0.0.1:8000/v1/remove-background?output=matte" \
   -H "Content-Type: image/png" \
   --data-binary @photo.png \
   -o matte.png

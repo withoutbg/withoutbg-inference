@@ -46,26 +46,6 @@ export function AppFooter() {
             </h2>
             <ul className="space-y-2" role="list">
               <li>
-                <a href={`${SITE_URL}/privacy`} className={linkClass}>
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href={`${SITE_URL}/terms`} className={linkClass}>
-                  Terms
-                </a>
-              </li>
-              <li>
-                <a href={`${SITE_URL}/about`} className={linkClass}>
-                  About
-                </a>
-              </li>
-              <li>
-                <a href={`${SITE_URL}/imprint`} className={linkClass}>
-                  Imprint
-                </a>
-              </li>
-              <li>
                 <a href={LICENSE_URL} className={linkClass}>
                   Open Model License
                 </a>
@@ -96,11 +76,6 @@ export function AppFooter() {
               <li>
                 <a href={`${SITE_URL}/docs`} className={linkClass}>
                   Documentation
-                </a>
-              </li>
-              <li>
-                <a href={`${SITE_URL}/tech`} className={linkClass}>
-                  Tech
                 </a>
               </li>
               <li>
