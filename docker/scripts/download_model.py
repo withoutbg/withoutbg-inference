@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import sys
 from pathlib import Path
@@ -37,6 +38,20 @@ def main() -> None:
             f"expected {expected_sha256}, got {actual_sha256}"
         )
 
+    sidecar = json.loads(Path(dest_dir, f"{model_file}.json").read_text())
+    if "gateway" in sidecar:
+        # The manifest is validated by the runtime too; reject unsafe download paths here.
+        gateway = sidecar["gateway"]
+        for name in ("router", "matting", "birefnet"):
+            spec = gateway[name]
+            filename = spec["file"]
+            if Path(filename).is_absolute() or ".." in Path(filename).parts:
+                raise SystemExit("Invalid gateway asset path")
+            path = Path(hf_hub_download(repo_id=repo_id, filename=filename,
+                                      local_dir=dest_dir, token=token))
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            if digest != spec["sha256"]:
+                raise SystemExit(f"Gateway SHA256 mismatch: {name}")
     print(f"Downloaded and verified {model_file} ({actual_sha256})")
 
 

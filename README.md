@@ -143,3 +143,20 @@ Apache-2.0 for this repository's code. Built with DINOv3. See [THIRD_PARTY_NOTIC
 - **Bugs / questions:** [GitHub Issues](https://github.com/withoutbg/withoutbg-inference/issues)
 - **Docker docs:** [withoutbg.com/docs/open-model/docker](https://withoutbg.com/docs/open-model/docker?utm_source=github&utm_medium=withoutbg-inference-readme&utm_campaign=main-readme)
 - **Commercial:** [contact@withoutbg.com](mailto:contact@withoutbg.com)
+
+## Community gateway (next release)
+
+The community pipeline reuses the trained withoutBG router. It sends fine strands,
+soft detail, and transparency to the matting branch trained and maintained by
+withoutBG. Hard opaque objects, flat scenes, and vehicles go to **BiRefNet** for
+segmentation. Only the selected branch runs.
+
+The same policy applies to Python, Docker, the Mac app, and Hugging Face. GIMP
+uses the gateway in its connected Mac or Docker server; the plugin still receives
+a cutout and an editable mask through the existing Local API. Local processing
+stays local. The Hugging Face Space runs inference on its host.
+
+New bundles carry a versioned gateway manifest, a trained router, the withoutBG
+matting model, and BiRefNet. Existing bundles without gateway metadata retain
+their original behavior. These changes are prepared locally; published downloads
+and historical benchmark results still describe the previous release.

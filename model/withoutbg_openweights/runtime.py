@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import json
 import logging
 import threading
 import time
@@ -12,9 +13,10 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 
-from withoutbg_openweights.config import ModelConfig, load_config
+from withoutbg_openweights.config import ModelConfig, load_config, _sidecar_path
+from withoutbg_openweights.gateway import CommunityGateway
 from withoutbg_openweights.onnx_cuda import prepare_model_for_cuda
 from withoutbg_openweights.postprocess import image_to_data_url, postprocess_outputs
 from withoutbg_openweights.preprocess import preprocess_image
@@ -56,6 +58,7 @@ class InferenceRuntime:
         self._session: Any = None
         self._lock = threading.Lock()
         self._ready = False
+        self._gateway = None
 
     @property
     def config(self) -> ModelConfig:
@@ -71,6 +74,19 @@ class InferenceRuntime:
         model_path = self._config.model_path
         if not model_path.is_file():
             raise FileNotFoundError(f"Model not found: {model_path}")
+
+        sidecar_path = _sidecar_path(model_path)
+        sidecar = json.loads(sidecar_path.read_text()) if sidecar_path.exists() else {}
+        if "gateway" in sidecar:
+            if self._config.ort_provider == _CUDA_PROVIDER:
+                _assert_cuda_runtime_available()
+            self._gateway = CommunityGateway(
+                sidecar["gateway"], lambda name: model_path.parent / name,
+                providers=[self._config.ort_provider],
+            )
+            self._gateway.preload()
+            self._ready = True
+            return
 
         if self._config.sha256:
             digest = hashlib.sha256(model_path.read_bytes()).hexdigest()
@@ -106,10 +122,19 @@ class InferenceRuntime:
         logger.info("Model warmup complete")
 
     def infer_from_pil(self, image: Image.Image) -> InferenceResult:
-        if not self._ready or self._session is None:
+        if not self._ready:
             raise RuntimeError("Inference runtime is not loaded")
 
         start = time.perf_counter()
+        if self._gateway is not None:
+            image = ImageOps.exif_transpose(image).convert("RGB")
+            alpha, _route = self._gateway.estimate_alpha(image)
+            cutout = image.copy()
+            cutout.putalpha(alpha)
+            return InferenceResult(
+                cutout=cutout, matte=alpha.convert("RGB"),
+                latency_ms=int((time.perf_counter() - start) * 1000),
+            )
         with self._lock:
             tensor, rgb_image, resized_dims = preprocess_image(image, self._config)
             outputs = self._session.run(None, {self._config.input_name: tensor})
