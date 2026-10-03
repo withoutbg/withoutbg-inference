@@ -40,11 +40,13 @@ COPY THIRD_PARTY_NOTICES.md /opt/withoutbg/${PRODUCT_VERSION}/THIRD_PARTY_NOTICE
 
 RUN pip3 install --upgrade pip && pip3 install ".[gpu]"
 
-COPY --from=model-assets /model/ /opt/withoutbg/${PRODUCT_VERSION}/model/
+RUN useradd --create-home --uid 1000 withoutbg
+
+# --chown on COPY: a later chown -R would store a second copy of the ~1.5 GB model.
+COPY --from=model-assets --chown=withoutbg:withoutbg /model/ /opt/withoutbg/${PRODUCT_VERSION}/model/
 
 RUN python3 /usr/local/bin/prepare-gpu-model.py \
         "/opt/withoutbg/${PRODUCT_VERSION}/model/${MODEL_FILE}" \
-    && useradd --create-home --uid 1000 withoutbg \
-    && chown -R withoutbg:withoutbg /opt/withoutbg
+    && chown withoutbg:withoutbg /opt/withoutbg/${PRODUCT_VERSION}/model/*.cuda.onnx
 
 USER withoutbg
