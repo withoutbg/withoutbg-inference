@@ -40,6 +40,17 @@ export const UPSTREAM_COMPONENTS: UpstreamComponent[] = [
       },
     ],
   },
+  {
+    name: "BiRefNet",
+    license: "MIT",
+    links: [
+      { label: "GitHub", href: "https://github.com/ZhengPeng7/BiRefNet" },
+      {
+        label: "MIT License",
+        href: "https://github.com/ZhengPeng7/BiRefNet/blob/main/LICENSE",
+      },
+    ],
+  },
 ];
 
 export const HF_MODEL_URL = "https://huggingface.co/withoutbg/withoutbg-openweights-onnx";

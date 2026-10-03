@@ -48,7 +48,15 @@ _REMOVE_BACKGROUND_RESPONSES = {
             "X-Latency-Ms": {
                 "description": "Server-side inference latency in milliseconds",
                 "schema": {"type": "integer"},
-            }
+            },
+            "X-Route-Category": {
+                "description": "Router category, e.g. fine_strand or vehicle (routed bundles)",
+                "schema": {"type": "string"},
+            },
+            "X-Route-Pipeline": {
+                "description": "Branch that produced the alpha: matting or birefnet (routed bundles)",
+                "schema": {"type": "string"},
+            },
         },
     },
     400: {
@@ -150,6 +158,8 @@ async def remove_background(
             processed=result.processed_data_url,
             alphaMatte=result.alpha_matte_data_url,
             latencyMs=result.latency_ms,
+            routeCategory=result.route_category,
+            routePipeline=result.route_pipeline,
         )
         return JSONResponse(content=payload.model_dump())
 
@@ -167,8 +177,12 @@ async def remove_background(
         return _binary_error(400, f"Invalid image input: {exc}")
 
     png_image = result.matte if output_kind == "matte" else result.cutout
+    headers = {"X-Latency-Ms": str(result.latency_ms)}
+    if result.route_category is not None:
+        headers["X-Route-Category"] = result.route_category
+        headers["X-Route-Pipeline"] = str(result.route_pipeline)
     return Response(
         content=image_to_png_bytes(png_image),
         media_type="image/png",
-        headers={"X-Latency-Ms": str(result.latency_ms)},
+        headers=headers,
     )

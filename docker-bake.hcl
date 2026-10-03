@@ -18,8 +18,13 @@ variable "MODEL_FILE" {
   default = "withoutbg-open-weights.onnx"
 }
 
+variable "HF_REVISION" {
+  # Pinned Hugging Face commit, so a new upload never changes a build silently.
+  default = "93afc91c44e0e27706159ead1623918b49f31d15"
+}
+
 variable "MODEL_SHA256" {
-  default = "29930e48e9d5ecc56d6486c53c35a4c1470566c2a3359fa180b08c8d3c34ef0f"
+  default = "a22bc936a7be65f500f44955129bdde09a16d1ab3745a43224128638981cff32"
 }
 
 variable "HF_TOKEN" {
@@ -36,6 +41,7 @@ target "model-assets" {
   platforms = ["linux/amd64"]
   args = {
     HF_REPO = HF_REPO
+    HF_REVISION = HF_REVISION
     MODEL_FILE = MODEL_FILE
     MODEL_SHA256 = MODEL_SHA256
     HF_TOKEN = HF_TOKEN

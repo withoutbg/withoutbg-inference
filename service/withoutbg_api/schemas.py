@@ -11,6 +11,12 @@ class RemoveBackgroundResponse(BaseModel):
     processed: str = Field(..., description="Transparent PNG cutout as data URL")
     alphaMatte: str = Field(..., description="Grayscale matte as data URL")
     latencyMs: int = Field(..., description="Server-side inference latency in milliseconds")
+    routeCategory: str | None = Field(
+        None, description="Router category, e.g. fine_strand or vehicle (routed bundles)"
+    )
+    routePipeline: str | None = Field(
+        None, description="Branch that produced the alpha: matting or birefnet (routed bundles)"
+    )
 
 
 class LicenseLink(BaseModel):

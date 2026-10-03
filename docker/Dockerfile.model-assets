@@ -1,11 +1,13 @@
 # syntax=docker/dockerfile:1.4
 
 ARG HF_REPO=withoutbg/withoutbg-openweights-onnx
+ARG HF_REVISION=93afc91c44e0e27706159ead1623918b49f31d15
 ARG MODEL_FILE=withoutbg-open-weights.onnx
-ARG MODEL_SHA256=29930e48e9d5ecc56d6486c53c35a4c1470566c2a3359fa180b08c8d3c34ef0f
+ARG MODEL_SHA256=a22bc936a7be65f500f44955129bdde09a16d1ab3745a43224128638981cff32
 
 FROM --platform=$BUILDPLATFORM python:3.12-slim-bookworm AS model-assets
 ARG HF_REPO
+ARG HF_REVISION
 ARG MODEL_FILE
 ARG MODEL_SHA256
 ARG HF_TOKEN
@@ -13,4 +15,4 @@ ENV HF_TOKEN=${HF_TOKEN}
 COPY docker/scripts/download_model.py /usr/local/bin/download_model.py
 RUN pip install --no-cache-dir "huggingface_hub==0.29.3" \
     && python /usr/local/bin/download_model.py \
-         "${HF_REPO}" "${MODEL_FILE}" "${MODEL_SHA256}" "/model"
+         "${HF_REPO}" "${MODEL_FILE}" "${MODEL_SHA256}" "/model" "${HF_REVISION}"

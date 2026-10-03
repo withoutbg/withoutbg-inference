@@ -2,9 +2,10 @@
 
 ## withoutBG Open Weights Model (v3 distribution)
 
-License: Apache-2.0 — https://withoutbg.com/open-model/license
+License: withoutBG Open Weights license — https://withoutbg.com/open-model/license
 
-This distribution includes a compiled ONNX model that encapsulates the following upstream components.
+This distribution includes the compiled ONNX model bundle (`withoutbg-open-weights-backbone.onnx`,
+`withoutbg-open-weights.onnx`, `birefnet-general.onnx`), which builds on the following upstream components.
 
 **Built with DINOv3**
 
@@ -28,7 +29,7 @@ This product uses ONNX Runtime and other Python packages distributed under their
 
 ## BiRefNet
 
-The community segmentation branch uses BiRefNet by ZhengPeng7.
+`birefnet-general.onnx` (the segmentation branch for hard opaque objects, flat scenes, and vehicles) is BiRefNet by ZhengPeng7.
 Source: https://github.com/ZhengPeng7/BiRefNet
 
 MIT License

@@ -18,8 +18,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-cpu = ["onnxruntime==1.20.1"]
-gpu = ["onnxruntime-gpu==1.20.1", "onnx>=1.16.0,<2"]
+cpu = ["onnxruntime==1.22.0"]
+gpu = ["onnxruntime-gpu==1.22.0", "onnx>=1.16.0,<2"]
 
 [tool.setuptools]
 packages = ["withoutbg_openweights", "withoutbg_api", "withoutbg_api.routes"]

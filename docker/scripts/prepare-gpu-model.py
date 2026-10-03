@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-import sys
 import json
+import sys
 from pathlib import Path
 
 from withoutbg_openweights.onnx_cuda import prepare_model_for_cuda
@@ -19,9 +19,11 @@ def main() -> None:
         raise SystemExit(f"Model not found: {model_path}")
 
     sidecar = model_path.with_suffix(model_path.suffix + ".json")
-    if sidecar.exists() and "gateway" in json.loads(sidecar.read_text()):
-        # Gateway assets are portable fp32 graphs; keep hashes and filenames intact.
-        print(model_path)
+    meta = json.loads(sidecar.read_text()) if sidecar.exists() else {}
+    if "pipeline" in meta:
+        # Originals stay hash-checked; the runtime loads these .cuda siblings.
+        for name in ("router", "coarse", "birefnet"):
+            print(prepare_model_for_cuda(model_path.parent / meta[name]["file"]))
         return
     prepared = prepare_model_for_cuda(model_path)
     print(prepared)

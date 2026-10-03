@@ -34,6 +34,20 @@ UPSTREAM_COMPONENTS: list[UpstreamComponent] = [
             ),
         ],
     ),
+    UpstreamComponent(
+        name="BiRefNet",
+        license="MIT",
+        links=[
+            LicenseLink(
+                label="GitHub",
+                href="https://github.com/ZhengPeng7/BiRefNet",
+            ),
+            LicenseLink(
+                label="MIT License",
+                href="https://github.com/ZhengPeng7/BiRefNet/blob/main/LICENSE",
+            ),
+        ],
+    ),
 ]
 
 

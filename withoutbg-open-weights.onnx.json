@@ -1,35 +1,97 @@
 {
-  "canvas_size": 448,
-  "matting_input_size": 448,
+  "schema_version": 3,
+  "pipeline": "routed",
+  "variant": "oss",
+  "model_version": "10.8.0",
+  "components": {
+    "depth": "depth_anything_v2_vits.pth",
+    "convnext": "dinov3_convnext_base_pretrain_lvd1689m-801f2ba9.pth",
+    "matting": "matting-dav2s-base_10.0.0_best_trunk.pth",
+    "router": "router_10.1.0_best.pth",
+    "birefnet": "BiRefNet"
+  },
   "opset_version": 18,
   "precision": "fp32",
-  "requested_precision": "fp32",
-  "io_fp16": false,
-  "transformer_opt": false,
-  "ort_offline_opt": true,
-  "ort_opt_level": "extended",
-  "variant": "oss",
-  "depth_variant": "dav2s",
-  "convnext_size": "base",
-  "refiner": false,
-  "model_version": "10.0.0",
-  "input_name": "rgb",
-  "output_name": "alpha",
-  "input_dtype": "float32",
-  "input_shape": [
-    1,
-    3,
-    448,
-    448
+  "max_inference_size": [
+    4096,
+    4096
   ],
-  "output_shape": [
-    1,
-    1,
-    448,
-    448
-  ],
-  "size_mb": 454.5,
-  "sha256": "29930e48e9d5ecc56d6486c53c35a4c1470566c2a3359fa180b08c8d3c34ef0f",
-  "mae": 3.6705664285818784e-08,
-  "max_abs": 3.0040740966796875e-05
+  "router": {
+    "file": "withoutbg-open-weights-backbone.onnx",
+    "sha256": "a64ba43cc25557f568ad6f35ed1139049dd43f5568385fa4f9848e0b4c7123ff",
+    "inputs": {
+      "rgb_matting": {
+        "size": 448,
+        "resize": "stretch",
+        "interpolation": "bilinear",
+        "antialias": false
+      }
+    },
+    "logits_name": "route_logits",
+    "feature_names": [
+      "f0",
+      "f1",
+      "f2",
+      "f3"
+    ],
+    "categories": [
+      "fine_strand",
+      "soft_detail",
+      "transparency",
+      "hard_opaque",
+      "flat_scene",
+      "vehicle"
+    ],
+    "birefnet_categories": [
+      "hard_opaque",
+      "flat_scene",
+      "vehicle"
+    ],
+    "mae": 1.819754515963723e-06,
+    "max_abs": 0.00189208984375
+  },
+  "coarse": {
+    "file": "withoutbg-open-weights.onnx",
+    "sha256": "a22bc936a7be65f500f44955129bdde09a16d1ab3745a43224128638981cff32",
+    "inputs": {
+      "rgb_depth": {
+        "size": 518,
+        "resize": "stretch",
+        "interpolation": "bicubic",
+        "antialias": true
+      },
+      "rgb_matting": {
+        "size": 448,
+        "resize": "stretch",
+        "interpolation": "bilinear",
+        "antialias": false
+      }
+    },
+    "feature_names": [
+      "f0",
+      "f1",
+      "f2",
+      "f3"
+    ],
+    "output_name": "coarse_alpha",
+    "output_size": 448,
+    "mae": 5.89670491990546e-07,
+    "max_abs": 1.683831214904785e-05
+  },
+  "birefnet": {
+    "file": "birefnet-general.onnx",
+    "sha256": "28c988df0383b7c9925139b7aa012c33ce750e8552bd75a628346096acb4c0bb",
+    "inputs": {
+      "rgb": {
+        "size": 1024,
+        "resize": "stretch",
+        "interpolation": "bilinear",
+        "antialias": false
+      }
+    },
+    "output_name": "alpha",
+    "output_size": 1024,
+    "mae": 2.580805968932509e-08,
+    "max_abs": 1.3899352779844776e-07
+  }
 }

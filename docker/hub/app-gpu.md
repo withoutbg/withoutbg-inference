@@ -24,6 +24,10 @@ Published for **linux/amd64** only (NVIDIA CUDA on x86_64).
 - FastAPI inference service (`/api/v1/remove-background`)
 - Health endpoint at `/health`
 
+## Model
+
+The withoutBG Open Weights 10.8.0 bundle (~1.5 GB, baked into the image): a trained router sends fine strands, soft detail and transparency to the withoutBG matting model, and hard opaque objects, flat scenes and vehicles to BiRefNet. Only the selected branch runs.
+
 ## Related images
 
 | Image | Use case |
@@ -36,4 +40,4 @@ Published for **linux/amd64** only (NVIDIA CUDA on x86_64).
 
 - [withoutBG open model](https://withoutbg.com/open-model)
 - [Source on GitHub](https://github.com/withoutbg/withoutbg-inference)
-- License: Apache-2.0
+- License: Apache-2.0 for the code; the model is under the [withoutBG Open Weights license](https://withoutbg.com/open-model/license) and includes DINOv3, Depth Anything V2 (Apache-2.0) and BiRefNet (MIT). See `/v1/licenses` in the running container

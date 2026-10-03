@@ -16,10 +16,10 @@ import numpy as np
 from PIL import Image, ImageOps
 
 from withoutbg_openweights.config import ModelConfig, load_config, _sidecar_path
-from withoutbg_openweights.gateway import CommunityGateway
 from withoutbg_openweights.onnx_cuda import prepare_model_for_cuda
 from withoutbg_openweights.postprocess import image_to_data_url, postprocess_outputs
 from withoutbg_openweights.preprocess import preprocess_image
+from withoutbg_openweights.routed import RoutedPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +42,8 @@ class InferenceResult:
     cutout: Image.Image
     matte: Image.Image
     latency_ms: int
+    route_category: str | None = None
+    route_pipeline: str | None = None
 
     @property
     def processed_data_url(self) -> str:
@@ -58,7 +60,7 @@ class InferenceRuntime:
         self._session: Any = None
         self._lock = threading.Lock()
         self._ready = False
-        self._gateway = None
+        self._routed: RoutedPipeline | None = None
 
     @property
     def config(self) -> ModelConfig:
@@ -77,15 +79,20 @@ class InferenceRuntime:
 
         sidecar_path = _sidecar_path(model_path)
         sidecar = json.loads(sidecar_path.read_text()) if sidecar_path.exists() else {}
-        if "gateway" in sidecar:
+        if "pipeline" in sidecar:
             if self._config.ort_provider == _CUDA_PROVIDER:
                 _assert_cuda_runtime_available()
-            self._gateway = CommunityGateway(
-                sidecar["gateway"], lambda name: model_path.parent / name,
-                providers=[self._config.ort_provider],
+            self._routed = RoutedPipeline(
+                sidecar, model_path.parent, providers=[self._config.ort_provider]
             )
-            self._gateway.preload()
+            self._routed.warmup()
             self._ready = True
+            logger.info(
+                "Routed bundle loaded: provider=%s model_version=%s components=%s",
+                self._config.ort_provider,
+                self._config.model_version,
+                sidecar.get("components"),
+            )
             return
 
         if self._config.sha256:
@@ -126,14 +133,17 @@ class InferenceRuntime:
             raise RuntimeError("Inference runtime is not loaded")
 
         start = time.perf_counter()
-        if self._gateway is not None:
+        if self._routed is not None:
             image = ImageOps.exif_transpose(image).convert("RGB")
-            alpha, _route = self._gateway.estimate_alpha(image)
+            alpha, route = self._routed.estimate_alpha(image)
             cutout = image.copy()
             cutout.putalpha(alpha)
             return InferenceResult(
-                cutout=cutout, matte=alpha.convert("RGB"),
+                cutout=cutout,
+                matte=alpha.convert("RGB"),
                 latency_ms=int((time.perf_counter() - start) * 1000),
+                route_category=route["category"],
+                route_pipeline=route["pipeline"],
             )
         with self._lock:
             tensor, rgb_image, resized_dims = preprocess_image(image, self._config)
