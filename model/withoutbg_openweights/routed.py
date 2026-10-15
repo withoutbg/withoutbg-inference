@@ -1,6 +1,6 @@
 """Routed open-weights pipeline: router → withoutBG matting or BiRefNet (sidecar schema 3).
 
-Matches model-pro ``wbgnet_inference.py --config inference_oss_config.json``
+Matches modeldev ``wbgnet_inference.py --config inference_oss_config.json``
 (pipeline ``routed``, withoutBG Open Weights): the shared ConvNeXt backbone at
 448² yields router logits and features. Fine strands, soft detail and
 transparency go to Depth Anything V2 small depth + ConvNeXt-fused matting

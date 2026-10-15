@@ -31,13 +31,13 @@ def preprocess_image(image: Image.Image, config: ModelConfig) -> tuple[np.ndarra
 
 
 # ---------------------------------------------------------------------------
-# Routed pipeline (sidecar schema 3). Mirrors model-pro serve: whole-image
+# Routed pipeline (sidecar schema 3). Mirrors modeldev serve: whole-image
 # square stretches, no letterbox.
 # ---------------------------------------------------------------------------
 
 
 def fit_max_size(image: Image.Image, max_width: int, max_height: int) -> Image.Image:
-    """Downscale to fit ``max_width × max_height`` (model-pro ``resize_if_img_big``)."""
+    """Downscale to fit ``max_width × max_height`` (modeldev ``resize_if_img_big``)."""
     w, h = image.size
     ar = w / h
     resize = False
