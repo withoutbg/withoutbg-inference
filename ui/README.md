@@ -42,7 +42,7 @@ with any implementation that satisfies this interface.
 
 ## Design system sync
 
-These files are derived from [web-ui](https://github.com/withoutbg/web-ui) and
+These files are derived from [ui](https://github.com/withoutbg/ui) and
 should be updated when the upstream editor UI changes:
 
 | File | Source |
