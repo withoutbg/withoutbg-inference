@@ -146,13 +146,15 @@ def _open_edit_images(extras: dict[str, bytes]) -> dict[str, Image.Image]:
     return images
 
 
-def _infer(runtime, image: Image.Image, extras: dict[str, bytes], engine: str = "open"):
+def _infer(runtime, image: Image.Image, extras: dict[str, bytes], engine: str = "open",
+           pro_password: str | None = None):
     """Plain removal, or the Smart brush edit when masks or a matte are sent.
 
     ``engine="pro"`` sends the image to withoutBG Pro (opt-in, needs
     ``WITHOUTBG_API_KEY``). Smart brush is open weights only.
     """
     if engine == "pro":
+        cloud.check_password(pro_password)
         if extras:
             raise EditInputError("Smart brush runs on the open weights; use engine=open.")
         return cloud.infer(image)
@@ -188,13 +190,15 @@ async def remove_background(
         default="open",
         description=(
             "open: local open weights (default). pro: withoutBG Pro via the hosted "
-            "API, available only when the server has WITHOUTBG_API_KEY set; the "
+            "API, available only when the server has WITHOUTBG_API_KEY and "
+            "WITHOUTBG_PRO_PASSWORD set; send the password in X-Pro-Password. The "
             "image is uploaded to api.withoutbg.com and uses 1 credit."
         ),
     ),
 ):
     runtime = request.app.state.runtime
     use_local = engine == "open"
+    pro_password = request.headers.get("x-pro-password")
     content_type = request.headers.get("content-type", "")
     is_json_request = "application/json" in content_type
 
@@ -211,7 +215,7 @@ async def remove_background(
                 for name in EDIT_FIELDS
                 if (value := getattr(body, name)) is not None
             }
-            result = _infer(runtime, image, extras, engine)
+            result = _infer(runtime, image, extras, engine, pro_password)
         except HTTPException:
             raise
         except cloud.CloudError as exc:
@@ -239,7 +243,7 @@ async def remove_background(
         output_kind = _resolve_binary_output(output)
         raw, extras = await _read_image_bytes(request)
         image = Image.open(io.BytesIO(raw))
-        result = _infer(runtime, image, extras, engine)
+        result = _infer(runtime, image, extras, engine, pro_password)
     except cloud.CloudError as exc:
         return _binary_error(exc.status_code, str(exc))
     except EditInputError as exc:

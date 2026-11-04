@@ -1,13 +1,16 @@
 """Optional withoutBG Pro engine: the hosted withoutBG API, used only when
-``WITHOUTBG_API_KEY`` is set on the server.
+both ``WITHOUTBG_API_KEY`` and ``WITHOUTBG_PRO_PASSWORD`` are set on the server.
 
-The key never reaches the browser. Images go to api.withoutbg.com only for
-requests that pick ``engine=pro``; the default engine stays the local open
-weights.
+The key never reaches the browser. Because the server spends the owner's
+credits on behalf of whoever calls it, every Pro request must also carry the
+password in ``X-Pro-Password``; without it, anyone who can reach the server
+could use up the credits. Images go to api.withoutbg.com only for requests
+that pick ``engine=pro``; the default engine stays the local open weights.
 """
 
 from __future__ import annotations
 
+import hmac
 import io
 import os
 import sys
@@ -36,8 +39,25 @@ def api_key() -> str | None:
     return os.environ.get("WITHOUTBG_API_KEY", "").strip() or None
 
 
+def pro_password() -> str | None:
+    return os.environ.get("WITHOUTBG_PRO_PASSWORD", "") or None
+
+
 def pro_available() -> bool:
-    return api_key() is not None
+    """Pro needs both the key and a password guarding it."""
+    return api_key() is not None and pro_password() is not None
+
+
+def check_password(given: str | None) -> None:
+    """Raise unless *given* matches WITHOUTBG_PRO_PASSWORD (constant time)."""
+    expected = pro_password()
+    if api_key() is None or expected is None:
+        raise CloudError(
+            400,
+            "withoutBG Pro is not configured: set WITHOUTBG_API_KEY and WITHOUTBG_PRO_PASSWORD.",
+        )
+    if not given or not hmac.compare_digest(given.encode(), expected.encode()):
+        raise CloudError(401, "Wrong or missing Pro password (X-Pro-Password header).")
 
 
 def _device() -> str:
@@ -71,7 +91,7 @@ def _multipart(png: bytes) -> tuple[bytes, str]:
 
 
 _FRIENDLY = {
-    401: "withoutBG Pro rejected the API key. Check WITHOUTBG_API_KEY.",
+    401: "withoutBG Pro rejected the server's API key. Check WITHOUTBG_API_KEY.",
     402: "Out of withoutBG Pro credits. Top up at withoutbg.com.",
     403: "This API key cannot use withoutBG Pro.",
     429: "withoutBG Pro rate limit reached. Try again shortly.",
@@ -89,7 +109,9 @@ def _post_alpha(png: bytes, key: str) -> bytes:
             return resp.read()
     except urllib.error.HTTPError as exc:
         message = _FRIENDLY.get(exc.code, f"withoutBG Pro returned HTTP {exc.code}.")
-        raise CloudError(exc.code if exc.code in _FRIENDLY else 502, message) from exc
+        # 401 from upstream = bad server key, not a bad Pro password: report 502.
+        status = exc.code if exc.code in _FRIENDLY and exc.code != 401 else 502
+        raise CloudError(status, message) from exc
     except urllib.error.URLError as exc:
         raise CloudError(502, f"Cannot reach withoutBG Pro: {exc.reason}") from exc
 

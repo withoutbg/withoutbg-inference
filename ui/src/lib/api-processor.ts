@@ -4,14 +4,20 @@ const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "/api").replace(/\/$/, "")
 
 /**
  * Engine for new removals. "pro" (withoutBG Pro, hosted) is offered only when
- * the server has WITHOUTBG_API_KEY set; see `fetchProAvailable`. Smart brush
+ * the server has WITHOUTBG_API_KEY and WITHOUTBG_PRO_PASSWORD set; see
+ * `fetchProAvailable`. Pro requests carry the password in X-Pro-Password so
+ * strangers who reach the server can't spend the owner's credits. Smart brush
  * edits always run on the open weights.
  */
 export type Engine = "open" | "pro";
+/** Fired when a rejected Pro password drops the engine back to open weights. */
+export const ENGINE_RESET_EVENT = "wbg-engine-reset";
 let currentEngine: Engine = "open";
+let proPassword = "";
 
-export function setEngine(engine: Engine) {
+export function setEngine(engine: Engine, password = proPassword) {
   currentEngine = engine;
+  proPassword = password;
 }
 
 export async function fetchProAvailable(): Promise<boolean> {
@@ -27,9 +33,11 @@ export async function fetchProAvailable(): Promise<boolean> {
 
 async function post(body: Record<string, string>, engine: Engine = "open"): Promise<ProcessorResult> {
   const url = `${API_BASE}/v1/remove-background?engine=${engine}`;
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (engine === "pro") headers["X-Pro-Password"] = proPassword;
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
   });
 
@@ -41,6 +49,18 @@ async function post(body: Record<string, string>, engine: Engine = "open"): Prom
       message = parsed.detail ?? parsed.error ?? detail;
     } catch {
       // plain-text error
+    }
+    if (engine === "pro" && response.status === 401) {
+      // Wrong Pro password: forget it so picking Pro asks again.
+      try {
+        window.localStorage.removeItem("wbg-pro-password");
+      } catch {
+        // storage blocked
+      }
+      currentEngine = "open";
+      proPassword = "";
+      window.dispatchEvent(new Event(ENGINE_RESET_EVENT));
+      message = `${message} Switched back to open weights; pick Pro to re-enter the password.`;
     }
     throw new Error(message || `API error ${response.status}`);
   }

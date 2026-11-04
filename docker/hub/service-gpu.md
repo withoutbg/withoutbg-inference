@@ -47,7 +47,7 @@ curl -X POST "http://127.0.0.1:8000/v1/remove-background?output=matte" \
 
 ## Optional: withoutBG Pro
 
-Set `-e WITHOUTBG_API_KEY=sk_your_key` and `POST /v1/remove-background?engine=pro` uses withoutBG Pro. Pro uploads the image to api.withoutbg.com (1 credit each). The open weights stay the default and never send images anywhere. Keys: [withoutBG Pro](https://withoutbg.com/pro-model-api?utm_source=dockerhub&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-api).
+Set `-e WITHOUTBG_API_KEY=sk_your_key -e WITHOUTBG_PRO_PASSWORD=<long random password>` and `POST /v1/remove-background?engine=pro` uses withoutBG Pro. Pro uploads the image to api.withoutbg.com (1 credit each). The open weights stay the default and never send images anywhere. Pro calls are charged to your key, so each one must send the password (`X-Pro-Password`; the web UI asks once). Keep a Pro-enabled server private, e.g. `-p 127.0.0.1:8080:8080`. Keys: [withoutBG Pro](https://withoutbg.com/pro-model-api?utm_source=dockerhub&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-api).
 
 ## Model
 
