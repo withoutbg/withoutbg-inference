@@ -21,6 +21,9 @@ import numpy as np
 from PIL import Image
 
 from withoutbg_openweights.edit import clamp_matte, edit_alpha, net_clamp, resize_nearest
+from withoutbg_openweights.edit_context import EditContext, fingerprint
+from withoutbg_openweights.edit_context import decode as decode_context
+from withoutbg_openweights.edit_context import encode as encode_context
 from withoutbg_openweights.onnx_cuda import prepare_model_for_cuda
 from withoutbg_openweights.preprocess import fit_max_size, graph_inputs, resize_bilinear
 
@@ -147,14 +150,27 @@ class RoutedPipeline:
             matte = matte.resize(orig_size, Image.Resampling.BILINEAR)
         return matte, {"category": category, "pipeline": pipeline}
 
+    def _edit_context(self, rgb: np.ndarray, rgb_u8: np.ndarray) -> tuple[EditContext, np.ndarray]:
+        """Router + coarse of the working image: ``(context, coarse alpha)``. Caller holds the lock."""
+        category, feeds, feats = self._route(rgb)
+        coarse, depth = self._coarse(rgb, feeds, feats, with_depth=True)
+        return EditContext(category=category, fingerprint=fingerprint(rgb_u8), depth=depth), coarse
+
     def edit_alpha(
-        self, image: Image.Image, strokes: np.ndarray, matte: np.ndarray | None = None
-    ) -> tuple[Image.Image, dict[str, str]]:
+        self,
+        image: Image.Image,
+        strokes: np.ndarray,
+        matte: np.ndarray | None = None,
+        context: str | None = None,
+    ) -> tuple[Image.Image, dict[str, str], str]:
         """Apply Smart brush *strokes* (``{0, 0.5, 1}`` at *image*'s size, ``edit.combine_masks``).
 
         *matte* is the previous matte (float32 ``(H, W)`` in ``[0, 1]`` at *image*'s
         size, ``edit.matte_from_image``); without it the image is matted first.
-        Returns ``(L matte, route)`` with ``route["pipeline"] == "edit"``.
+        *context* is the token a previous edit of this image returned
+        (``edit_context.py``): with it and a *matte*, the router and coarse graphs
+        are skipped. A missing or stale token is recomputed, never an error.
+        Returns ``(L matte, route, context token)`` with ``route["pipeline"] == "edit"``.
         """
         if not self.supports_edit:
             raise ValueError("This bundle has no stroke-edit graph (Smart brush needs 10.12.4+)")
@@ -164,14 +180,20 @@ class RoutedPipeline:
         if matte is not None and matte.shape != strokes.shape:
             raise ValueError(f"matte {matte.shape} does not match image {orig_size[::-1]}")
         work = fit_max_size(image.convert("RGB"), *self._max_size)
-        rgb = np.asarray(work, dtype=np.float32) / 255.0
+        rgb_u8 = np.asarray(work, dtype=np.uint8)
+        rgb = rgb_u8.astype(np.float32) / 255.0
         h, w = rgb.shape[:2]
         work_strokes = resize_nearest(strokes, h, w)
+        spec = self._specs["stroke_edit"]
+        ctx = decode_context(context, self._categories, int(spec["size"]))
+        if ctx is not None and (matte is None or ctx.fingerprint != fingerprint(rgb_u8)):
+            ctx = None
+        token = context if ctx is not None else None
         with self._lock:
-            category, feeds, feats = self._route(rgb)
-            coarse, depth = self._coarse(rgb, feeds, feats, with_depth=True)
+            if ctx is None:
+                ctx, coarse = self._edit_context(rgb, rgb_u8)
             if matte is None:
-                if category in self._birefnet_categories:
+                if ctx.category in self._birefnet_categories:
                     coarse = self._birefnet(rgb)
                 work_matte = np.clip(resize_bilinear(coarse, h, w), 0.0, 1.0)[0]
             elif matte.shape != (h, w):
@@ -179,10 +201,10 @@ class RoutedPipeline:
             else:
                 work_matte = matte.astype(np.float32)
             alpha = edit_alpha(
-                rgb, work_matte, work_strokes, depth, self._specs["stroke_edit"],
+                rgb, work_matte, work_strokes, ctx.depth, spec,
                 self._run_editor, resize_bilinear,
             )
         out = Image.fromarray(np.clip(alpha * 255.0 + 0.5, 0, 255).astype(np.uint8), "L")
         if out.size != orig_size:
             out = clamp_matte(out.resize(orig_size, Image.Resampling.BILINEAR), net_clamp(strokes))
-        return out, {"category": category, "pipeline": "edit"}
+        return out, {"category": ctx.category, "pipeline": "edit"}, token or encode_context(ctx)

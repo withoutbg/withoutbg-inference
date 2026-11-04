@@ -45,6 +45,8 @@ class InferenceResult:
     latency_ms: int
     route_category: str | None = None
     route_pipeline: str | None = None
+    edit_context: str | None = None
+    """Smart brush edits only: token to send back with the next edit of this image."""
 
     @property
     def processed_data_url(self) -> str:
@@ -168,10 +170,12 @@ class InferenceRuntime:
         keep_mask: Image.Image | None = None,
         remove_mask: Image.Image | None = None,
         matte: Image.Image | None = None,
+        edit_context: str | None = None,
     ) -> InferenceResult:
         """Smart brush edit (``edit.py``): masks and the optional previous matte
         are images the size of *image* after EXIF orientation. Without *matte*
-        the image is matted first.
+        the image is matted first. *edit_context* is the token the previous edit
+        of this image returned; with a matte it skips the router and coarse graphs.
 
         Raises:
             EditInputError: no mask, a bad mask or matte, or no stroke-edit graph.
@@ -192,7 +196,7 @@ class InferenceRuntime:
             (h, w),
         )
         prev = None if matte is None else matte_from_image(matte, image.size)
-        alpha, route = self._routed.edit_alpha(image, strokes, prev)
+        alpha, route, context = self._routed.edit_alpha(image, strokes, prev, edit_context)
         cutout = image.copy()
         cutout.putalpha(alpha)
         return InferenceResult(
@@ -201,6 +205,7 @@ class InferenceRuntime:
             latency_ms=int((time.perf_counter() - start) * 1000),
             route_category=route["category"],
             route_pipeline=route["pipeline"],
+            edit_context=context,
         )
 
     def infer_from_bytes(self, data: bytes) -> InferenceResult:

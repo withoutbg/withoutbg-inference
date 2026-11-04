@@ -12,6 +12,11 @@ export interface ProcessorResult {
   alphaMatte: string;
   /** Server-side latency in milliseconds (use null for client-only processing). */
   latencyMs: number | null;
+  /**
+   * Smart brush edits only: opaque token from the server. Send it back with the
+   * next edit of the same image so the server runs only the Smart brush graph.
+   */
+  editContext?: string | null;
 }
 
 export type ProcessorFn = (src: string) => Promise<ProcessorResult>;
@@ -22,6 +27,8 @@ export interface EditRequest {
   keepMask: string | null;
   removeMask: string | null;
   matte: string;
+  /** `editContext` from the previous edit of this image, if any. */
+  editContext?: string | null;
 }
 
 export type EditFn = (req: EditRequest) => Promise<ProcessorResult>;

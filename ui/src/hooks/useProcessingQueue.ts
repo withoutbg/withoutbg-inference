@@ -23,6 +23,8 @@ export interface Job {
   preparedImage: string | null;
   processedImage: string | null;
   alphaMatte: string | null;
+  /** Smart brush: server token for this image, sent back with the next edit. */
+  editContext: string | null;
   latencyMs: number | null;
   aspectRatio: number | null;
   error: string | null;
@@ -184,6 +186,7 @@ export function useProcessingQueue(
             preparedImage: null,
             processedImage: null,
             alphaMatte: null,
+            editContext: null,
             latencyMs: null,
             aspectRatio: null,
             error: null,
@@ -237,10 +240,12 @@ export function useProcessingQueue(
         keepMask,
         removeMask,
         matte: job.alphaMatte,
+        editContext: job.editContext,
       });
       patchJob(job.id, {
         processedImage: result.processed,
         alphaMatte: result.alphaMatte,
+        editContext: result.editContext ?? null,
         latencyMs: result.latencyMs,
       });
     },
@@ -281,6 +286,7 @@ export function useProcessingQueue(
           status: "done",
           processedImage: result.processed,
           alphaMatte: result.alphaMatte,
+          editContext: null,
           latencyMs: result.latencyMs,
           phase: null,
         });

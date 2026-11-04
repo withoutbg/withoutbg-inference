@@ -36,6 +36,10 @@ _REMOVE_BACKGROUND_OPENAPI_EXTRA = {
                         "keep_mask": _BINARY_SCHEMA,
                         "remove_mask": _BINARY_SCHEMA,
                         "matte": _BINARY_SCHEMA,
+                        "edit_context": {
+                            "type": "string",
+                            "description": "editContext from the previous edit of this image (JSON responses)",
+                        },
                     },
                 }
             },
@@ -114,8 +118,8 @@ def _binary_error(status_code: int, message: str) -> JSONResponse:
 EDIT_FIELDS = ("keep_mask", "remove_mask", "matte")
 
 
-async def _read_image_bytes(request: Request) -> tuple[bytes, dict[str, bytes]]:
-    """Image bytes plus any Smart brush fields (multipart only)."""
+async def _read_image_bytes(request: Request) -> tuple[bytes, dict[str, bytes], str | None]:
+    """Image bytes, any Smart brush fields and the edit context (multipart only)."""
     content_type = request.headers.get("content-type", "")
     if "multipart/form-data" in content_type:
         form = await request.form()
@@ -127,12 +131,15 @@ async def _read_image_bytes(request: Request) -> tuple[bytes, dict[str, bytes]]:
             part = form.get(name)
             if part is not None:
                 extras[name] = await part.read() if hasattr(part, "read") else _decode_image_payload(part)
-        return await upload.read(), extras
+        context = form.get("edit_context")
+        if context is not None and hasattr(context, "read"):
+            context = (await context.read()).decode("ascii", "replace")
+        return await upload.read(), extras, context
 
     raw = await request.body()
     if not raw:
         raise ValueError("Empty request body.")
-    return raw, {}
+    return raw, {}, None
 
 
 def _open_edit_images(extras: dict[str, bytes]) -> dict[str, Image.Image]:
@@ -147,8 +154,10 @@ def _open_edit_images(extras: dict[str, bytes]) -> dict[str, Image.Image]:
 
 
 def _infer(runtime, image: Image.Image, extras: dict[str, bytes], engine: str = "open",
-           pro_password: str | None = None):
+           pro_password: str | None = None, edit_context: str | None = None):
     """Plain removal, or the Smart brush edit when masks or a matte are sent.
+
+    *edit_context* (Smart brush only) is the token the previous edit returned.
 
     ``engine="pro"`` sends the image to withoutBG Pro (opt-in, needs
     ``WITHOUTBG_API_KEY``). Smart brush is open weights only.
@@ -160,7 +169,7 @@ def _infer(runtime, image: Image.Image, extras: dict[str, bytes], engine: str = 
         return cloud.infer(image)
     if not extras:
         return runtime.infer_from_pil(image)
-    return runtime.edit_from_pil(image, **_open_edit_images(extras))
+    return runtime.edit_from_pil(image, **_open_edit_images(extras), edit_context=edit_context)
 
 
 def _resolve_binary_output(output: str) -> str:
@@ -215,7 +224,7 @@ async def remove_background(
                 for name in EDIT_FIELDS
                 if (value := getattr(body, name)) is not None
             }
-            result = _infer(runtime, image, extras, engine, pro_password)
+            result = _infer(runtime, image, extras, engine, pro_password, body.edit_context)
         except HTTPException:
             raise
         except cloud.CloudError as exc:
@@ -233,6 +242,7 @@ async def remove_background(
             latencyMs=result.latency_ms,
             routeCategory=result.route_category,
             routePipeline=result.route_pipeline,
+            editContext=result.edit_context,
         )
         return JSONResponse(content=payload.model_dump())
 
@@ -241,9 +251,9 @@ async def remove_background(
 
     try:
         output_kind = _resolve_binary_output(output)
-        raw, extras = await _read_image_bytes(request)
+        raw, extras, edit_context = await _read_image_bytes(request)
         image = Image.open(io.BytesIO(raw))
-        result = _infer(runtime, image, extras, engine, pro_password)
+        result = _infer(runtime, image, extras, engine, pro_password, edit_context)
     except cloud.CloudError as exc:
         return _binary_error(exc.status_code, str(exc))
     except EditInputError as exc:

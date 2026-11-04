@@ -26,6 +26,14 @@ class RemoveBackgroundRequest(BaseModel):
             "image. It is edited instead of recomputed, so earlier fixes are kept."
         ),
     )
+    edit_context: str | None = Field(
+        None,
+        description=(
+            "Optional, with matte and a mask: the editContext the previous edit of this "
+            "image returned. Opaque. Lets the server run only the Smart brush graph instead "
+            "of the full pipeline. A stale or unknown value is ignored (recomputed)."
+        ),
+    )
 
 
 class RemoveBackgroundResponse(BaseModel):
@@ -37,6 +45,13 @@ class RemoveBackgroundResponse(BaseModel):
     )
     routePipeline: str | None = Field(
         None, description="Branch that produced the alpha: matting or birefnet (routed bundles)"
+    )
+    editContext: str | None = Field(
+        None,
+        description=(
+            "Smart brush edits only: opaque token to send back as edit_context with the "
+            "next edit of the same image, so it skips the full pipeline."
+        ),
     )
 
 

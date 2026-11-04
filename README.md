@@ -16,6 +16,10 @@ curl -F image=@photo.jpg -F remove_mask=@remove.png -F matte=@photo-cutout.png \
   http://localhost:8000/v1/remove-background -o fixed.png
 ```
 
+Brushing the same image several times? Send JSON instead: each edit response carries an
+`editContext`. Pass it back as `edit_context` with the next edit (plus `matte` and a mask) and the
+server runs only the Smart brush graph, not the full pipeline. A stale value is ignored, never an error.
+
 **[Docker docs →](https://withoutbg.com/docs/open-model/docker?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-docs-open-model-docker)** · **[GPU docs →](https://withoutbg.com/docs/open-model/docker-gpu?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-docs-open-model-docker-gpu)** · **[Local API docs →](https://withoutbg.com/docs/open-model/local-api?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-docs-open-model-local-api)**
 
 ## See the results

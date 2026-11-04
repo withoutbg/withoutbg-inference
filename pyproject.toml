@@ -28,3 +28,9 @@ packages = ["withoutbg_openweights", "withoutbg_api", "withoutbg_api.routes"]
 [tool.setuptools.package-dir]
 withoutbg_openweights = "model/withoutbg_openweights"
 withoutbg_api = "service/withoutbg_api"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

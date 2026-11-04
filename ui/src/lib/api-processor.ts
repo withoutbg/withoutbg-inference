@@ -70,15 +70,17 @@ async function post(body: Record<string, string>, engine: Engine = "open"): Prom
     processed: data.processed,
     alphaMatte: data.alphaMatte,
     latencyMs: data.latencyMs,
+    editContext: data.editContext ?? null,
   };
 }
 
 export const apiProcessor: ProcessorFn = (src) => post({ image: src }, currentEngine);
 
 /** Smart brush edit: the same endpoint with masks and the previous matte. */
-export const apiEditor: EditFn = ({ image, keepMask, removeMask, matte }) => {
+export const apiEditor: EditFn = ({ image, keepMask, removeMask, matte, editContext }) => {
   const body: Record<string, string> = { image, matte };
   if (keepMask) body.keep_mask = keepMask;
   if (removeMask) body.remove_mask = removeMask;
+  if (editContext) body.edit_context = editContext;
   return post(body);
 };
