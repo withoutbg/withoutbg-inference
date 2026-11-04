@@ -60,9 +60,12 @@ def main() -> None:
 
     sidecar = json.loads(sidecar_path.read_text())
     if "pipeline" in sidecar:
-        # Routed bundle: model_file is the matting graph; fetch the router and BiRefNet.
+        # Routed bundle: model_file is the matting graph; fetch the router, BiRefNet
+        # and (v4+) the Keep / Remove stroke-edit graph.
         # The runtime validates the full sidecar again on load.
-        for name in ("router", "birefnet"):
+        for name in ("router", "birefnet", "stroke_edit"):
+            if name not in sidecar:
+                continue
             spec = sidecar[name]
             if not _is_bundle_relative(spec["file"]):
                 raise SystemExit("Invalid bundle asset path")

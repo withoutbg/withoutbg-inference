@@ -22,8 +22,9 @@ def main() -> None:
     meta = json.loads(sidecar.read_text()) if sidecar.exists() else {}
     if "pipeline" in meta:
         # Originals stay hash-checked; the runtime loads these .cuda siblings.
-        for name in ("router", "coarse", "birefnet"):
-            print(prepare_model_for_cuda(model_path.parent / meta[name]["file"]))
+        for name in ("router", "coarse", "birefnet", "stroke_edit"):
+            if name in meta:
+                print(prepare_model_for_cuda(model_path.parent / meta[name]["file"]))
         return
     prepared = prepare_model_for_cuda(model_path)
     print(prepared)

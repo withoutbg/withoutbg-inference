@@ -3,15 +3,15 @@ name: Docker publish
 on:
   push:
     branches: [main]
-    tags: ["v3.*"]
+    tags: ["v4.*"]
 
 concurrency:
   group: docker-publish-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  PRODUCT_VERSION: v3
-  IMAGE_PREFIX: withoutbg/withoutbg-openweights-v3
+  PRODUCT_VERSION: v4
+  IMAGE_PREFIX: withoutbg/withoutbg-openweights-v4
 
 jobs:
   build-and-push:

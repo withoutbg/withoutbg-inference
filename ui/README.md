@@ -1,7 +1,7 @@
 # Background Removal Editor
 
 An open-source, single-page background removal editor built with Next.js 15.
-The UI matches the [withoutBG](https://withoutbg.com) design system: monochrome
+The UI matches the [withoutBG](https://withoutbg.com?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-home) design system: monochrome
 Stripe/Vercel-style, dark mode by default.
 
 ## Features

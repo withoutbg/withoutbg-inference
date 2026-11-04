@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-DEFAULT_PRODUCT_VERSION = "v3"
+DEFAULT_PRODUCT_VERSION = "v4"
 DEFAULT_CANVAS_SIZE = 448
 
 

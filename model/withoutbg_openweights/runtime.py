@@ -16,6 +16,7 @@ import numpy as np
 from PIL import Image, ImageOps
 
 from withoutbg_openweights.config import ModelConfig, load_config, _sidecar_path
+from withoutbg_openweights.edit import EditInputError, combine_masks, mask_from_image, matte_from_image
 from withoutbg_openweights.onnx_cuda import prepare_model_for_cuda
 from withoutbg_openweights.postprocess import image_to_data_url, postprocess_outputs
 from withoutbg_openweights.preprocess import preprocess_image
@@ -32,7 +33,7 @@ def _assert_cuda_runtime_available() -> None:
             "CUDAExecutionProvider is configured but no NVIDIA GPU device is "
             "visible inside the container. Start the GPU image with GPU access, "
             "for example: docker run --rm --gpus all -p 8000:8000 "
-            "withoutbg/withoutbg-openweights-v3-service-gpu:latest "
+            "withoutbg/withoutbg-openweights-v4-service-gpu:latest "
             "(requires the NVIDIA Container Toolkit on the host)."
         )
 
@@ -155,6 +156,52 @@ class InferenceRuntime:
 
         latency_ms = int((time.perf_counter() - start) * 1000)
         return InferenceResult(cutout=cutout, matte=matte, latency_ms=latency_ms)
+
+    @property
+    def supports_edit(self) -> bool:
+        """True when the loaded bundle can apply Keep / Remove masks (10.12.4+)."""
+        return self._routed is not None and getattr(self._routed, "supports_edit", False)
+
+    def edit_from_pil(
+        self,
+        image: Image.Image,
+        keep_mask: Image.Image | None = None,
+        remove_mask: Image.Image | None = None,
+        matte: Image.Image | None = None,
+    ) -> InferenceResult:
+        """Keep / Remove edit (``edit.py``): masks and the optional previous matte
+        are images the size of *image* after EXIF orientation. Without *matte*
+        the image is matted first.
+
+        Raises:
+            EditInputError: no mask, a bad mask or matte, or no stroke-edit graph.
+        """
+        if not self._ready:
+            raise RuntimeError("Inference runtime is not loaded")
+        if not self.supports_edit:
+            raise EditInputError("Keep / Remove needs a bundle with the stroke-edit graph (10.12.4+)")
+        if keep_mask is None and remove_mask is None:
+            raise EditInputError("A matte needs a keep_mask or remove_mask: send the Keep / Remove masks with it")
+
+        start = time.perf_counter()
+        image = ImageOps.exif_transpose(image).convert("RGB")
+        w, h = image.size
+        strokes = combine_masks(
+            None if keep_mask is None else mask_from_image(keep_mask, image.size, "Keep mask"),
+            None if remove_mask is None else mask_from_image(remove_mask, image.size, "Remove mask"),
+            (h, w),
+        )
+        prev = None if matte is None else matte_from_image(matte, image.size)
+        alpha, route = self._routed.edit_alpha(image, strokes, prev)
+        cutout = image.copy()
+        cutout.putalpha(alpha)
+        return InferenceResult(
+            cutout=cutout,
+            matte=alpha.convert("RGB"),
+            latency_ms=int((time.perf_counter() - start) * 1000),
+            route_category=route["category"],
+            route_pipeline=route["pipeline"],
+        )
 
     def infer_from_bytes(self, data: bytes) -> InferenceResult:
         image = Image.open(io.BytesIO(data))

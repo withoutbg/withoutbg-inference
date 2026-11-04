@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="withoutBG Open Weights v3",
+        title="withoutBG Open Weights v4",
         description="ONNX inference API for withoutBG open weights background removal",
         version="3.0.0",
         lifespan=lifespan,

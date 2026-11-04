@@ -2,7 +2,7 @@
 
 from withoutbg_api.schemas import LicenseLink, LicensesResponse, UpstreamComponent
 
-PRODUCT_LICENSE_URL = "https://withoutbg.com/open-model/license"
+PRODUCT_LICENSE_URL = "https://withoutbg.com/open-model/license?utm_source=inference-app&utm_medium=app&utm_campaign=open-weights-v4&utm_content=inference-ui-open-model-license"
 THIRD_PARTY_NOTICES_PATH = "/opt/withoutbg/v3/THIRD_PARTY_NOTICES.md"
 
 UPSTREAM_COMPONENTS: list[UpstreamComponent] = [

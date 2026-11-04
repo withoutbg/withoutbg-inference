@@ -11,5 +11,5 @@ router = APIRouter(prefix="/v1", tags=["licenses"])
 @router.get("/licenses", response_model=LicensesResponse)
 async def licenses(request: Request) -> LicensesResponse:
     runtime = request.app.state.runtime
-    product_version = runtime.config.product_version if runtime else "v3"
+    product_version = runtime.config.product_version if runtime else "v4"
     return build_licenses_response(product_version)

@@ -27,13 +27,13 @@ jobs:
       matrix:
         include:
           - image: service-cpu
-            short-description: Self-hosted withoutBG v3 background removal API (CPU, ONNX, FastAPI).
+            short-description: Self-hosted withoutBG v4 background removal API (CPU, ONNX, FastAPI).
           - image: service-gpu
-            short-description: Self-hosted withoutBG v3 background removal API (GPU, CUDA, FastAPI).
+            short-description: Self-hosted withoutBG v4 background removal API (GPU, CUDA, FastAPI).
           - image: app-cpu
-            short-description: Self-hosted withoutBG background removal web app + API (CPU, open weights v3).
+            short-description: Self-hosted withoutBG background removal web app + API (CPU, open weights v4).
           - image: app-gpu
-            short-description: Self-hosted withoutBG background removal web app + API (GPU, open weights v3).
+            short-description: Self-hosted withoutBG background removal web app + API (GPU, open weights v4).
     steps:
       - uses: actions/checkout@v4
 
@@ -51,7 +51,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_DESCRIPTION_TOKEN || secrets.DOCKERHUB_TOKEN }}
-          repository: withoutbg/withoutbg-openweights-v3-${{ matrix.image }}
+          repository: withoutbg/withoutbg-openweights-v4-${{ matrix.image }}
           readme-filepath: ./docker/hub/${{ matrix.image }}.md
           short-description: ${{ matrix.short-description }}
           enable-url-completion: true

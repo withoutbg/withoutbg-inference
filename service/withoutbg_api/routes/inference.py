@@ -11,6 +11,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, Response
 from PIL import Image
 
+from withoutbg_openweights.edit import EditInputError
 from withoutbg_openweights.postprocess import image_to_png_bytes
 from withoutbg_api.schemas import RemoveBackgroundRequest, RemoveBackgroundResponse
 
@@ -31,6 +32,9 @@ _REMOVE_BACKGROUND_OPENAPI_EXTRA = {
                     "type": "object",
                     "properties": {
                         "image": _BINARY_SCHEMA,
+                        "keep_mask": _BINARY_SCHEMA,
+                        "remove_mask": _BINARY_SCHEMA,
+                        "matte": _BINARY_SCHEMA,
                     },
                 }
             },
@@ -70,6 +74,17 @@ _REMOVE_BACKGROUND_RESPONSES = {
             }
         },
     },
+    422: {
+        "description": "Invalid Keep / Remove mask or matte, or the bundle has no stroke-edit graph",
+        "content": {
+            "application/json": {
+                "schema": {
+                    "type": "object",
+                    "properties": {"error": {"type": "string"}},
+                }
+            }
+        },
+    },
     503: {
         "description": "Model not ready",
         "content": {
@@ -95,19 +110,46 @@ def _binary_error(status_code: int, message: str) -> JSONResponse:
     return JSONResponse({"error": message}, status_code=status_code)
 
 
-async def _read_image_bytes(request: Request) -> bytes:
+EDIT_FIELDS = ("keep_mask", "remove_mask", "matte")
+
+
+async def _read_image_bytes(request: Request) -> tuple[bytes, dict[str, bytes]]:
+    """Image bytes plus any Keep / Remove fields (multipart only)."""
     content_type = request.headers.get("content-type", "")
     if "multipart/form-data" in content_type:
         form = await request.form()
         upload = form.get("image")
         if upload is None or not hasattr(upload, "read"):
             raise ValueError("Multipart field 'image' not found.")
-        return await upload.read()
+        extras = {}
+        for name in EDIT_FIELDS:
+            part = form.get(name)
+            if part is not None:
+                extras[name] = await part.read() if hasattr(part, "read") else _decode_image_payload(part)
+        return await upload.read(), extras
 
     raw = await request.body()
     if not raw:
         raise ValueError("Empty request body.")
-    return raw
+    return raw, {}
+
+
+def _open_edit_images(extras: dict[str, bytes]) -> dict[str, Image.Image]:
+    images = {}
+    for name, data in extras.items():
+        try:
+            images[name] = Image.open(io.BytesIO(data))
+            images[name].load()
+        except Exception as exc:
+            raise EditInputError(f"{name} is not a valid image") from exc
+    return images
+
+
+def _infer(runtime, image: Image.Image, extras: dict[str, bytes]):
+    """Plain removal, or the Keep / Remove edit when masks or a matte are sent."""
+    if not extras:
+        return runtime.infer_from_pil(image)
+    return runtime.edit_from_pil(image, **_open_edit_images(extras))
 
 
 def _resolve_binary_output(output: str) -> str:
@@ -146,9 +188,16 @@ async def remove_background(
             body = RemoveBackgroundRequest.model_validate(await request.json())
             raw = _decode_image_payload(body.image)
             image = Image.open(io.BytesIO(raw))
-            result = runtime.infer_from_pil(image)
+            extras = {
+                name: _decode_image_payload(value)
+                for name in EDIT_FIELDS
+                if (value := getattr(body, name)) is not None
+            }
+            result = _infer(runtime, image, extras)
         except HTTPException:
             raise
+        except EditInputError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
         except Exception as exc:
             raise HTTPException(
                 status_code=400, detail=f"Invalid image input: {exc}"
@@ -168,9 +217,11 @@ async def remove_background(
 
     try:
         output_kind = _resolve_binary_output(output)
-        raw = await _read_image_bytes(request)
+        raw, extras = await _read_image_bytes(request)
         image = Image.open(io.BytesIO(raw))
-        result = runtime.infer_from_pil(image)
+        result = _infer(runtime, image, extras)
+    except EditInputError as exc:
+        return _binary_error(422, str(exc))
     except ValueError as exc:
         return _binary_error(400, str(exc))
     except Exception as exc:

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG PRODUCT_VERSION=v3
+ARG PRODUCT_VERSION=v4
 
 FROM --platform=$BUILDPLATFORM node:22-alpine AS ui-build
 WORKDIR /ui
@@ -10,7 +10,7 @@ COPY ui/ ./
 ENV NEXT_PUBLIC_API_BASE=/api
 RUN npm run build
 
-ARG PRODUCT_VERSION=v3
+ARG PRODUCT_VERSION=v4
 FROM withoutbg-openweights-${PRODUCT_VERSION}-base-gpu
 
 USER root

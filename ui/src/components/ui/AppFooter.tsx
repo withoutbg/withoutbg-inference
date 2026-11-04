@@ -2,7 +2,7 @@ import Image from "next/image";
 import {
   LICENSE_URL,
   OSS_URL,
-  SITE_URL,
+  site,
   SUPPORT_URL,
 } from "@/lib/product-links";
 
@@ -74,12 +74,12 @@ export function AppFooter() {
                 </a>
               </li>
               <li>
-                <a href={`${SITE_URL}/docs`} className={linkClass}>
+                <a href={site("/docs")} className={linkClass}>
                   Documentation
                 </a>
               </li>
               <li>
-                <a href={`${SITE_URL}/mac`} className={linkClass}>
+                <a href={site("/mac")} className={linkClass}>
                   Mac App
                 </a>
               </li>
@@ -102,7 +102,7 @@ export function AppFooter() {
                 </a>
               </li>
               <li>
-                <a href={`${SITE_URL}/contact`} className={linkClass}>
+                <a href={site("/contact")} className={linkClass}>
                   Contact us
                 </a>
               </li>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useCallback, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Download, Brush } from "lucide-react";
 import ComparisonSlider from "./ComparisonSlider";
+import MaskEditor, { type MaskEditorResult } from "./MaskEditor";
 import type { Job } from "@/hooks/useProcessingQueue";
 
 // ---------------------------------------------------------------------------
@@ -70,6 +71,8 @@ interface ResultModalProps {
   doneJobs: Job[];
   onClose: () => void;
   onNavigate: (id: string) => void;
+  /** Keep / Remove edit; omitted when the server cannot edit. */
+  onEdit?: (job: Job, keepMask: string | null, removeMask: string | null) => Promise<void>;
 }
 
 export default function ResultModal({
@@ -77,8 +80,30 @@ export default function ResultModal({
   doneJobs,
   onClose,
   onNavigate,
+  onEdit,
 }: ResultModalProps) {
   const [bg, setBg] = useState<BgType>("checkerboard");
+  const [editing, setEditing] = useState(false);
+  const [editBusy, setEditBusy] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setEditing(false);
+    setEditError(null);
+  }, [job.id]);
+
+  const applyEdit = async ({ keepMask, removeMask }: MaskEditorResult) => {
+    if (!onEdit) return;
+    setEditBusy(true);
+    setEditError(null);
+    try {
+      await onEdit(job, keepMask, removeMask);
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : "Edit failed.");
+    } finally {
+      setEditBusy(false);
+    }
+  };
   const dialogRef = useRef<HTMLDivElement>(null);
 
   const currentIndex = doneJobs.findIndex((j) => j.id === job.id);
@@ -97,12 +122,13 @@ export default function ResultModal({
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
+      if (editing) return;
       if (e.key === "ArrowRight") goNext();
       if (e.key === "ArrowLeft") goPrev();
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [onClose, goNext, goPrev]);
+  }, [onClose, goNext, goPrev, editing]);
 
   // Trap scroll on body
   useEffect(() => {
@@ -207,6 +233,18 @@ export default function ResultModal({
 
         {/* Comparison area */}
         <div className="overflow-y-auto flex-1 p-4 space-y-3">
+          {editing && job.preparedImage ? (
+            <MaskEditor
+              image={job.preparedImage}
+              cutout={job.processedImage}
+              aspectRatio={job.aspectRatio ?? 4 / 3}
+              busy={editBusy}
+              error={editError}
+              onApply={applyEdit}
+              onCancel={() => setEditing(false)}
+            />
+          ) : (
+          <>
           <div className={`wbg-result-in overflow-hidden rounded-lg ${bgClass}`}>
             <ComparisonSlider
               before={job.beforeImage}
@@ -220,6 +258,16 @@ export default function ResultModal({
           {/* Controls row */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <BgToolbar active={bg} onChange={setBg} />
+            <div className="flex items-center gap-2">
+            {onEdit && job.preparedImage && (
+              <button
+                onClick={() => setEditing(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+              >
+                <Brush className="h-4 w-4" aria-hidden />
+                Fix with brush
+              </button>
+            )}
             <button
               onClick={handleDownload}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
@@ -227,7 +275,10 @@ export default function ResultModal({
               <Download className="h-4 w-4" aria-hidden />
               Download PNG
             </button>
+            </div>
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>

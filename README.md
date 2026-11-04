@@ -1,4 +1,4 @@
-# withoutBG Open Weights Inference (v3)
+# withoutBG Open Weights Inference (v4)
 
 ![withoutBG Docker](docs/docker-hero.webp)
 
@@ -6,7 +6,17 @@
 
 Run a browser UI, a headless API, or both. Same open-weights quality as the Python package and Mac app, on your own server.
 
-**[Docker docs →](https://withoutbg.com/docs/open-model/docker?utm_source=github&utm_medium=withoutbg-inference-readme&utm_campaign=main-readme)** · **[GPU docs →](https://withoutbg.com/docs/open-model/docker-gpu?utm_source=github&utm_medium=withoutbg-inference-readme&utm_campaign=main-readme)** · **[Local API docs →](https://withoutbg.com/docs/open-model/local-api?utm_source=github&utm_medium=withoutbg-inference-readme&utm_campaign=main-readme)**
+**New in v4: Keep / Remove.** Not happy with a cutout? Open it, pick **Fix with brush**, paint
+green over what went missing and red over what should go, press **Apply**. One stroke on an object
+is enough; the rest of the image stays as it was. Same thing over the API:
+
+```bash
+# remove_mask / keep_mask: same size as the image, white = painted; matte: the previous result
+curl -F image=@photo.jpg -F remove_mask=@remove.png -F matte=@photo-cutout.png \
+  http://localhost:8000/v1/remove-background -o fixed.png
+```
+
+**[Docker docs →](https://withoutbg.com/docs/open-model/docker?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-docs-open-model-docker)** · **[GPU docs →](https://withoutbg.com/docs/open-model/docker-gpu?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-docs-open-model-docker-gpu)** · **[Local API docs →](https://withoutbg.com/docs/open-model/local-api?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-docs-open-model-local-api)**
 
 ## See the results
 
@@ -14,18 +24,18 @@ Run a browser UI, a headless API, or both. Same open-weights quality as the Pyth
 ![Example 2](sample-results/open-weights/example2.png)
 ![Example 3](sample-results/open-weights/example3.png)
 
-**[Open Weights results →](https://withoutbg.com/open-model/results?utm_source=github&utm_medium=withoutbg-inference-readme&utm_campaign=main-readme)** · **[Cloud API results →](https://withoutbg.com/pro-model/results?utm_source=github&utm_medium=withoutbg-inference-readme&utm_campaign=main-readme)** · **[Compare →](https://withoutbg.com/compare/withoutbg-open-model-vs-pro-model?utm_source=github&utm_medium=withoutbg-inference-readme&utm_campaign=main-readme)**
+**[Open Weights results →](https://withoutbg.com/open-model/results?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-open-model-results)** · **[Cloud API results →](https://withoutbg.com/pro-model/results?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-results)** · **[Compare →](https://withoutbg.com/compare/withoutbg-open-model-vs-pro-model?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-compare-withoutbg-open-model-vs-pro-model)**
 
 ## Images
 
 | Image | Description |
 |-------|-------------|
-| `withoutbg-openweights-v3-service-cpu` | Inference API only (CPU), headless |
-| `withoutbg-openweights-v3-service-gpu` | Inference API only (GPU), headless |
-| `withoutbg-openweights-v3-app-cpu` | Web UI + API (CPU) |
-| `withoutbg-openweights-v3-app-gpu` | Web UI + API (GPU) |
+| `withoutbg-openweights-v4-service-cpu` | Inference API only (CPU), headless |
+| `withoutbg-openweights-v4-service-gpu` | Inference API only (GPU), headless |
+| `withoutbg-openweights-v4-app-cpu` | Web UI + API (CPU) |
+| `withoutbg-openweights-v4-app-gpu` | Web UI + API (GPU) |
 
-Docker Hub: `withoutbg/withoutbg-openweights-v3-*`
+Docker Hub: `withoutbg/withoutbg-openweights-v4-*`
 
 CPU images are published for **linux/amd64** and **linux/arm64** (Intel/AMD and Apple Silicon / ARM servers). GPU images are **linux/amd64** only (NVIDIA CUDA).
 
@@ -41,17 +51,17 @@ CPU images are published for **linux/amd64** and **linux/arm64** (Intel/AMD and 
 
 ```bash
 # Web UI + API (CPU) — open http://localhost:8080
-docker run --rm -p 8080:8080 withoutbg/withoutbg-openweights-v3-app-cpu:latest
+docker run --rm -p 8080:8080 withoutbg/withoutbg-openweights-v4-app-cpu:latest
 
 # API only (CPU) — OpenAPI at http://localhost:8000/docs
-docker run --rm -p 8000:8000 withoutbg/withoutbg-openweights-v3-service-cpu:latest
+docker run --rm -p 8000:8000 withoutbg/withoutbg-openweights-v4-service-cpu:latest
 ```
 
 GPU images require an NVIDIA GPU and the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html):
 
 ```bash
-docker run --rm --gpus all -p 8000:8000 withoutbg/withoutbg-openweights-v3-service-gpu:latest
-docker run --rm --gpus all -p 8080:8080 withoutbg/withoutbg-openweights-v3-app-gpu:latest
+docker run --rm --gpus all -p 8000:8000 withoutbg/withoutbg-openweights-v4-service-gpu:latest
+docker run --rm --gpus all -p 8080:8080 withoutbg/withoutbg-openweights-v4-app-gpu:latest
 ```
 
 After baking locally, use Compose:
@@ -117,10 +127,10 @@ This repo is the **self-host** path: HTTP API and browser UI on your own machine
 | Surface | Choose when |
 |---|---|
 | **[Python package](https://github.com/withoutbg/withoutbg-python)** | You want to embed withoutBG in scripts, notebooks, or backends |
-| **[Mac app](https://withoutbg.com/mac?utm_source=github&utm_medium=withoutbg-inference-readme&utm_campaign=main-readme)** | You want a native desktop cutout tool, with an optional Local API for plugins and scripts |
+| **[Mac app](https://withoutbg.com/mac?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-mac)** | You want a native desktop cutout tool, with an optional Local API for plugins and scripts |
 | **[GIMP plugin](https://github.com/withoutbg/withoutbg-gimp)** | You edit in GIMP 3 and want a private, mask-first workflow via Mac Local API or this Docker service |
 | **[Hugging Face](https://huggingface.co/withoutbg/withoutbg-openweights-onnx)** · **[Space](https://huggingface.co/spaces/withoutbg/withoutbg)** | You want to try a demo or download the ONNX weights directly |
-| **[Cloud API](https://withoutbg.com/pro-model?utm_source=github&utm_medium=withoutbg-inference-readme&utm_campaign=main-readme)** | You need maximum quality without running inference yourself |
+| **[Cloud API](https://withoutbg.com/pro-model?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model)** | You need maximum quality without running inference yourself |
 
 ```bash
 # In-process Python (no Docker)
@@ -130,19 +140,20 @@ uv add withoutbg
 
 ## Model
 
-The withoutBG Open Weights Model (10.8.0) is hosted at [withoutbg/withoutbg-openweights-onnx](https://huggingface.co/withoutbg/withoutbg-openweights-onnx). It is three ONNX graphs described by `withoutbg-open-weights.onnx.json`:
+The withoutBG Open Weights Model (10.12.4, v4) is hosted at [withoutbg/withoutbg-openweights-onnx](https://huggingface.co/withoutbg/withoutbg-openweights-onnx). It is four ONNX graphs described by `withoutbg-open-weights.onnx.json`:
 
 | File | Role |
 |---|---|
 | `withoutbg-open-weights-backbone.onnx` | Shared DINOv3 ConvNeXt backbone: router logits and matting features |
 | `withoutbg-open-weights.onnx` | withoutBG matting (Depth Anything V2 small depth + ConvNeXt-fused matting) |
 | `birefnet-general.onnx` | BiRefNet segmentation |
+| `withoutbg-open-weights-stroke-edit.onnx` | Keep / Remove stroke-edit net (2.5 MB) |
 
 A trained router picks one branch per image. Fine strands, soft detail, and transparency go to the withoutBG matting branch. Hard opaque objects, flat scenes, and vehicles go to **BiRefNet**. Only the selected branch runs, and its alpha is upsampled to native resolution. The API reports the decision in the `X-Route-Category` / `X-Route-Pipeline` headers (`routeCategory` / `routePipeline` in JSON responses).
 
 Builds download the bundle at a pinned Hugging Face revision (`HF_REVISION` in `docker-bake.hcl`), and every graph is SHA256-checked on load. Older single-graph bundles still load with their original behavior.
 
-The model is licensed under the [withoutBG Open Weights license](https://withoutbg.com/open-model/license?utm_source=github&utm_medium=withoutbg-inference-readme&utm_campaign=main-readme). Upstream components keep their own licenses: DINOv3 (DINOv3 License), Depth Anything V2 (Apache-2.0), and BiRefNet (MIT).
+The model is licensed under the [withoutBG Open Weights license](https://withoutbg.com/open-model/license?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-open-model-license). Upstream components keep their own licenses: DINOv3 (DINOv3 License), Depth Anything V2 (Apache-2.0), and BiRefNet (MIT).
 
 ## License
 
@@ -151,5 +162,5 @@ Apache-2.0 for this repository's code. Built with DINOv3. See [THIRD_PARTY_NOTIC
 ## Support
 
 - **Bugs / questions:** [GitHub Issues](https://github.com/withoutbg/withoutbg-inference/issues)
-- **Docker docs:** [withoutbg.com/docs/open-model/docker](https://withoutbg.com/docs/open-model/docker?utm_source=github&utm_medium=withoutbg-inference-readme&utm_campaign=main-readme)
+- **Docker docs:** [withoutbg.com/docs/open-model/docker](https://withoutbg.com/docs/open-model/docker?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-docs-open-model-docker)
 - **Commercial:** [contact@withoutbg.com](mailto:contact@withoutbg.com)

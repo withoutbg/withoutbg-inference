@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.4
 
-ARG PRODUCT_VERSION=v3
+ARG PRODUCT_VERSION=v4
 ARG MODEL_FILE=withoutbg-open-weights.onnx
 
 FROM python:3.12-slim-bookworm AS base-cpu

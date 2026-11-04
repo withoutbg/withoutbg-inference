@@ -5,6 +5,27 @@ from pydantic import BaseModel, Field
 
 class RemoveBackgroundRequest(BaseModel):
     image: str = Field(..., description="Input image as a data URL or raw base64 string")
+    keep_mask: str | None = Field(
+        None,
+        description=(
+            "Optional Keep mask (data URL or base64), the size of the image after EXIF "
+            "orientation: white (light, opaque) pixels mark what to keep. Needs an Open Weights v4 (10.12.4+) bundle."
+        ),
+    )
+    remove_mask: str | None = Field(
+        None,
+        description=(
+            "Optional Remove mask, same rules as keep_mask: marked pixels become transparent. "
+            "Where both masks mark a pixel, Remove wins."
+        ),
+    )
+    matte: str | None = Field(
+        None,
+        description=(
+            "Optional, needs keep_mask or remove_mask: the matte this server returned for the "
+            "image. It is edited instead of recomputed, so earlier fixes are kept."
+        ),
+    )
 
 
 class RemoveBackgroundResponse(BaseModel):

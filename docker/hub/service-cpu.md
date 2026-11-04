@@ -1,11 +1,13 @@
-# withoutBG Open Weights v3 — Inference API (CPU)
+# withoutBG Open Weights v4 — Inference API (CPU)
 
-Self-hosted [withoutBG](https://withoutbg.com) open weights background removal API. Runs the v3 ONNX model on CPU with a FastAPI service — no GPU required.
+Self-hosted [withoutBG](https://withoutbg.com?utm_source=dockerhub&utm_medium=listing&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-home) open weights background removal API. Runs the v4 ONNX model on CPU with a FastAPI service — no GPU required.
+
+**New in v4: Keep / Remove.** Paint what to keep and what to remove; a small stroke-edit network fixes the cutout. Send `keep_mask` / `remove_mask` (and the previous `matte`) to `/v1/remove-background`.
 
 ## Quick start
 
 ```bash
-docker run --rm -p 8000:8000 withoutbg/withoutbg-openweights-v3-service-cpu:latest
+docker run --rm -p 8000:8000 withoutbg/withoutbg-openweights-v4-service-cpu:latest
 ```
 
 Health check: `http://localhost:8000/health`
@@ -49,12 +51,12 @@ The withoutBG Open Weights 10.8.0 bundle (~1.5 GB, baked into the image): a trai
 
 | Image | Use case |
 |-------|----------|
-| `withoutbg/withoutbg-openweights-v3-service-gpu` | Same API, GPU acceleration |
-| `withoutbg/withoutbg-openweights-v3-app-cpu` | Web UI + API (CPU) |
-| `withoutbg/withoutbg-openweights-v3-app-gpu` | Web UI + API (GPU) |
+| `withoutbg/withoutbg-openweights-v4-service-gpu` | Same API, GPU acceleration |
+| `withoutbg/withoutbg-openweights-v4-app-cpu` | Web UI + API (CPU) |
+| `withoutbg/withoutbg-openweights-v4-app-gpu` | Web UI + API (GPU) |
 
 ## Links
 
-- [withoutBG open model](https://withoutbg.com/open-model)
+- [withoutBG open model](https://withoutbg.com/open-model?utm_source=dockerhub&utm_medium=listing&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-open-model)
 - [Source on GitHub](https://github.com/withoutbg/withoutbg-inference)
-- License: Apache-2.0 for the code; the model is under the [withoutBG Open Weights license](https://withoutbg.com/open-model/license) and includes DINOv3, Depth Anything V2 (Apache-2.0) and BiRefNet (MIT). See `/v1/licenses` in the running container
+- License: Apache-2.0 for the code; the model is under the [withoutBG Open Weights license](https://withoutbg.com/open-model/license?utm_source=dockerhub&utm_medium=listing&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-open-model-license) and includes DINOv3, Depth Anything V2 (Apache-2.0) and BiRefNet (MIT). See `/v1/licenses` in the running container

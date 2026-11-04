@@ -20,7 +20,7 @@ import { ProductLinks } from "@/components/ui/ProductLinks";
 // ---------------------------------------------------------------------------
 
 export default function BackgroundRemovalEditor() {
-  const { jobs, completedCount, lifetimeProcessedCount, enqueue, removeJob, retryJob, reset } =
+  const { jobs, completedCount, lifetimeProcessedCount, enqueue, removeJob, retryJob, editJob, reset } =
     useProcessingQueue();
 
   const [isDragOver, setIsDragOver] = useState(false);
@@ -319,6 +319,7 @@ export default function BackgroundRemovalEditor() {
             doneJobs={doneJobs}
             onClose={closeModal}
             onNavigate={(id) => setSelectedJobId(id)}
+            onEdit={editJob}
           />
         )}
 

@@ -15,3 +15,13 @@ export interface ProcessorResult {
 }
 
 export type ProcessorFn = (src: string) => Promise<ProcessorResult>;
+
+/** Keep / Remove masks (data URLs, white = painted) plus the matte being edited. */
+export interface EditRequest {
+  image: string;
+  keepMask: string | null;
+  removeMask: string | null;
+  matte: string;
+}
+
+export type EditFn = (req: EditRequest) => Promise<ProcessorResult>;

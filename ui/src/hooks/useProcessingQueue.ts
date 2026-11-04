@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { generateMockAlphaMatte, compositeCutout } from "@/lib/mock-alpha";
-import { apiProcessor } from "@/lib/api-processor";
-import type { ProcessorFn } from "@/lib/processor";
+import { apiEditor, apiProcessor } from "@/lib/api-processor";
+import type { EditFn, ProcessorFn } from "@/lib/processor";
 import { incrementLifetimeProcessedCount, getLifetimeProcessedCount } from "@/lib/star-prompt";
 import type { ProcessingPhase } from "@/components/editor/ProcessingPreview";
 
@@ -91,13 +91,55 @@ const mockProcessor: ProcessorFn = async (src: string) => {
 const defaultProcessor: ProcessorFn =
   process.env.NEXT_PUBLIC_USE_MOCK === "true" ? mockProcessor : apiProcessor;
 
+/** Mock Keep / Remove: paints the masks straight into the matte. */
+const mockEditor: EditFn = async ({ image, keepMask, removeMask, matte }) => {
+  await delay(500);
+  const base = await loadImage(matte);
+  const canvas = document.createElement("canvas");
+  canvas.width = base.naturalWidth;
+  canvas.height = base.naturalHeight;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(base, 0, 0);
+  for (const [mask, colour] of [
+    [keepMask, "#fff"],
+    [removeMask, "#000"],
+  ] as const) {
+    if (!mask) continue;
+    const m = await loadImage(mask);
+    const layer = document.createElement("canvas");
+    layer.width = canvas.width;
+    layer.height = canvas.height;
+    const l = layer.getContext("2d")!;
+    l.drawImage(m, 0, 0, canvas.width, canvas.height);
+    // white stroke pixels -> keep (white) / remove (black), the rest transparent
+    const data = l.getImageData(0, 0, layer.width, layer.height);
+    for (let i = 0; i < data.data.length; i += 4) {
+      const on = data.data[i] >= 128;
+      const v = colour === "#fff" ? 255 : 0;
+      data.data[i] = data.data[i + 1] = data.data[i + 2] = v;
+      data.data[i + 3] = on ? 255 : 0;
+    }
+    l.putImageData(data, 0, 0);
+    ctx.drawImage(layer, 0, 0);
+  }
+  const alphaMatte = canvas.toDataURL("image/png");
+  const processed = await compositeCutout(image, alphaMatte);
+  return { processed, alphaMatte, latencyMs: 500 };
+};
+
+const defaultEditor: EditFn =
+  process.env.NEXT_PUBLIC_USE_MOCK === "true" ? mockEditor : apiEditor;
+
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
 
 export const MAX_BATCH = 20;
 
-export function useProcessingQueue(processor: ProcessorFn = defaultProcessor) {
+export function useProcessingQueue(
+  processor: ProcessorFn = defaultProcessor,
+  editor: EditFn = defaultEditor
+) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [completedCount, setCompletedCount] = useState(0);
   const [lifetimeProcessedCount, setLifetimeProcessedCount] = useState(0);
@@ -185,6 +227,26 @@ export function useProcessingQueue(processor: ProcessorFn = defaultProcessor) {
     );
   }, []);
 
+  // ── Keep / Remove edit of a finished job ────────────────────────────────
+
+  const editJob = useCallback(
+    async (job: Job, keepMask: string | null, removeMask: string | null) => {
+      if (!job.preparedImage || !job.alphaMatte) throw new Error("Nothing to edit yet.");
+      const result = await editor({
+        image: job.preparedImage,
+        keepMask,
+        removeMask,
+        matte: job.alphaMatte,
+      });
+      patchJob(job.id, {
+        processedImage: result.processed,
+        alphaMatte: result.alphaMatte,
+        latencyMs: result.latencyMs,
+      });
+    },
+    [editor, patchJob]
+  );
+
   // ── Sequential worker ────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -244,6 +306,7 @@ export function useProcessingQueue(processor: ProcessorFn = defaultProcessor) {
     enqueue,
     removeJob,
     retryJob,
+    editJob,
     reset,
   };
 }

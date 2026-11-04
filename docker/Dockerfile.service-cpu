@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG PRODUCT_VERSION=v3
+ARG PRODUCT_VERSION=v4
 
 FROM withoutbg-openweights-${PRODUCT_VERSION}-base-cpu
 

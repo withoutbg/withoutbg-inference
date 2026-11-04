@@ -1,5 +1,5 @@
 variable "PRODUCT_VERSION" {
-  default = "v3"
+  default = "v4"
 }
 
 variable "PLATFORMS_CPU" {
@@ -20,11 +20,11 @@ variable "MODEL_FILE" {
 
 variable "HF_REVISION" {
   # Pinned Hugging Face commit, so a new upload never changes a build silently.
-  default = "93afc91c44e0e27706159ead1623918b49f31d15"
+  default = "d0bfe3f4d0cefe0a2ad427f350c6373a7e889ea0"
 }
 
 variable "MODEL_SHA256" {
-  default = "a22bc936a7be65f500f44955129bdde09a16d1ab3745a43224128638981cff32"
+  default = "cd40bdd56770b78e9a3593aa6dbbd28cf20ed4f6861c3a1644504d585ea3e4fd"
 }
 
 variable "HF_TOKEN" {
