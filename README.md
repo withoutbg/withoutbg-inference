@@ -70,6 +70,16 @@ After baking locally, use Compose:
 docker compose up app-cpu
 ```
 
+### Optional: withoutBG Pro
+
+The open weights run locally and need no account. If you also have a withoutBG Pro API key, pass it to the container and an **Open weights / Pro** switch appears in the web UI:
+
+```bash
+docker run --rm -p 8080:8080 -e WITHOUTBG_API_KEY=sk_your_key withoutbg/withoutbg-openweights-v4-app-cpu:latest
+```
+
+The API takes `?engine=pro` on `POST /v1/remove-background`. Pro requests upload the image to api.withoutbg.com and use 1 credit each. Open-weights requests never leave the server. Smart brush always runs on the open weights. Keys: [withoutBG Pro](https://withoutbg.com/pro-model-api?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-api).
+
 ## Build
 
 ```bash

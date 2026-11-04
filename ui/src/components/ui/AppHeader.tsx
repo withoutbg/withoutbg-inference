@@ -7,6 +7,7 @@ import { Heart } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { ApiModelMenu } from "@/components/ui/ApiModelMenu";
 import { DocsMenu } from "@/components/ui/DocsMenu";
+import { EngineToggle } from "@/components/ui/EngineToggle";
 import { OpenModelsMenu } from "@/components/ui/OpenModelsMenu";
 import { GitHubStarButton } from "@/components/conversion/GitHubStarButton";
 import { SUPPORT_URL } from "@/lib/product-links";
@@ -49,6 +50,7 @@ export function AppHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-3">
+          <EngineToggle />
           <a
             href={SUPPORT_URL}
             target="_blank"

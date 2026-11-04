@@ -13,6 +13,7 @@ from PIL import Image
 
 from withoutbg_openweights.edit import EditInputError
 from withoutbg_openweights.postprocess import image_to_png_bytes
+from withoutbg_api import cloud
 from withoutbg_api.schemas import RemoveBackgroundRequest, RemoveBackgroundResponse
 
 router = APIRouter(prefix="/v1", tags=["inference"])
@@ -145,8 +146,16 @@ def _open_edit_images(extras: dict[str, bytes]) -> dict[str, Image.Image]:
     return images
 
 
-def _infer(runtime, image: Image.Image, extras: dict[str, bytes]):
-    """Plain removal, or the Smart brush edit when masks or a matte are sent."""
+def _infer(runtime, image: Image.Image, extras: dict[str, bytes], engine: str = "open"):
+    """Plain removal, or the Smart brush edit when masks or a matte are sent.
+
+    ``engine="pro"`` sends the image to withoutBG Pro (opt-in, needs
+    ``WITHOUTBG_API_KEY``). Smart brush is open weights only.
+    """
+    if engine == "pro":
+        if extras:
+            raise EditInputError("Smart brush runs on the open weights; use engine=open.")
+        return cloud.infer(image)
     if not extras:
         return runtime.infer_from_pil(image)
     return runtime.edit_from_pil(image, **_open_edit_images(extras))
@@ -175,13 +184,22 @@ async def remove_background(
         default="cutout",
         description="PNG result kind: transparent cutout or grayscale alpha matte",
     ),
+    engine: Literal["open", "pro"] = Query(
+        default="open",
+        description=(
+            "open: local open weights (default). pro: withoutBG Pro via the hosted "
+            "API, available only when the server has WITHOUTBG_API_KEY set; the "
+            "image is uploaded to api.withoutbg.com and uses 1 credit."
+        ),
+    ),
 ):
     runtime = request.app.state.runtime
+    use_local = engine == "open"
     content_type = request.headers.get("content-type", "")
     is_json_request = "application/json" in content_type
 
     if is_json_request:
-        if runtime is None or not runtime.ready:
+        if use_local and (runtime is None or not runtime.ready):
             raise HTTPException(status_code=503, detail="Model not ready")
 
         try:
@@ -193,9 +211,11 @@ async def remove_background(
                 for name in EDIT_FIELDS
                 if (value := getattr(body, name)) is not None
             }
-            result = _infer(runtime, image, extras)
+            result = _infer(runtime, image, extras, engine)
         except HTTPException:
             raise
+        except cloud.CloudError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
         except EditInputError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         except Exception as exc:
@@ -212,14 +232,16 @@ async def remove_background(
         )
         return JSONResponse(content=payload.model_dump())
 
-    if runtime is None or not runtime.ready:
+    if use_local and (runtime is None or not runtime.ready):
         return _binary_error(503, "Model not ready")
 
     try:
         output_kind = _resolve_binary_output(output)
         raw, extras = await _read_image_bytes(request)
         image = Image.open(io.BytesIO(raw))
-        result = _infer(runtime, image, extras)
+        result = _infer(runtime, image, extras, engine)
+    except cloud.CloudError as exc:
+        return _binary_error(exc.status_code, str(exc))
     except EditInputError as exc:
         return _binary_error(422, str(exc))
     except ValueError as exc:
@@ -228,7 +250,7 @@ async def remove_background(
         return _binary_error(400, f"Invalid image input: {exc}")
 
     png_image = result.matte if output_kind == "matte" else result.cutout
-    headers = {"X-Latency-Ms": str(result.latency_ms)}
+    headers = {"X-Latency-Ms": str(result.latency_ms), "X-Engine": engine}
     if result.route_category is not None:
         headers["X-Route-Category"] = result.route_category
         headers["X-Route-Pipeline"] = str(result.route_pipeline)

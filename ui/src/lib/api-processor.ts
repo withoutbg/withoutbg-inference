@@ -1,9 +1,32 @@
 import type { EditFn, ProcessorFn, ProcessorResult } from "@/lib/processor";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "/api";
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "/api").replace(/\/$/, "");
 
-async function post(body: Record<string, string>): Promise<ProcessorResult> {
-  const url = `${API_BASE.replace(/\/$/, "")}/v1/remove-background`;
+/**
+ * Engine for new removals. "pro" (withoutBG Pro, hosted) is offered only when
+ * the server has WITHOUTBG_API_KEY set; see `fetchProAvailable`. Smart brush
+ * edits always run on the open weights.
+ */
+export type Engine = "open" | "pro";
+let currentEngine: Engine = "open";
+
+export function setEngine(engine: Engine) {
+  currentEngine = engine;
+}
+
+export async function fetchProAvailable(): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE}/health`);
+    if (!response.ok) return false;
+    const data = (await response.json()) as { pro_available?: boolean };
+    return data.pro_available === true;
+  } catch {
+    return false;
+  }
+}
+
+async function post(body: Record<string, string>, engine: Engine = "open"): Promise<ProcessorResult> {
+  const url = `${API_BASE}/v1/remove-background?engine=${engine}`;
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -30,7 +53,7 @@ async function post(body: Record<string, string>): Promise<ProcessorResult> {
   };
 }
 
-export const apiProcessor: ProcessorFn = (src) => post({ image: src });
+export const apiProcessor: ProcessorFn = (src) => post({ image: src }, currentEngine);
 
 /** Smart brush edit: the same endpoint with masks and the previous matte. */
 export const apiEditor: EditFn = ({ image, keepMask, removeMask, matte }) => {
