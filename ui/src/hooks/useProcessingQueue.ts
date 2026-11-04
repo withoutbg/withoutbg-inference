@@ -91,7 +91,7 @@ const mockProcessor: ProcessorFn = async (src: string) => {
 const defaultProcessor: ProcessorFn =
   process.env.NEXT_PUBLIC_USE_MOCK === "true" ? mockProcessor : apiProcessor;
 
-/** Mock Keep / Remove: paints the masks straight into the matte. */
+/** Mock Smart brush: paints the masks straight into the matte. */
 const mockEditor: EditFn = async ({ image, keepMask, removeMask, matte }) => {
   await delay(500);
   const base = await loadImage(matte);
@@ -227,7 +227,7 @@ export function useProcessingQueue(
     );
   }, []);
 
-  // ── Keep / Remove edit of a finished job ────────────────────────────────
+  // ── Smart brush edit of a finished job ────────────────────────────────
 
   const editJob = useCallback(
     async (job: Job, keepMask: string | null, removeMask: string | null) => {

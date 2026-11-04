@@ -2,7 +2,7 @@
 
 Self-hosted [withoutBG](https://withoutbg.com?utm_source=dockerhub&utm_medium=listing&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-home) background removal web app with GPU-accelerated inference. Upload images in the browser and remove backgrounds using the open weights v4 ONNX model on CUDA.
 
-**New in v4: Keep / Remove.** Paint what to keep and what to remove; a small stroke-edit network fixes the cutout. Open a result and choose *Fix with brush*.
+**New in v4: Smart brush.** Paint what to keep and what to remove; a small stroke-edit network fixes the cutout. Open a result and choose *Smart brush*.
 
 ## Quick start
 

@@ -2,7 +2,7 @@
 
 Self-hosted [withoutBG](https://withoutbg.com?utm_source=dockerhub&utm_medium=listing&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-home) open weights background removal API with GPU acceleration. Runs the v4 ONNX model via CUDA for faster inference.
 
-**New in v4: Keep / Remove.** Paint what to keep and what to remove; a small stroke-edit network fixes the cutout. Send `keep_mask` / `remove_mask` (and the previous `matte`) to `/v1/remove-background`.
+**New in v4: Smart brush.** Paint what to keep and what to remove; a small stroke-edit network fixes the cutout. Send `keep_mask` / `remove_mask` (and the previous `matte`) to `/v1/remove-background`.
 
 ## Quick start
 

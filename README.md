@@ -6,7 +6,7 @@
 
 Run a browser UI, a headless API, or both. Same open-weights quality as the Python package and Mac app, on your own server.
 
-**New in v4: Keep / Remove.** Not happy with a cutout? Open it, pick **Fix with brush**, paint
+**New in v4: Smart brush.** Not happy with a cutout? Open it, pick **Smart brush**, paint
 green over what went missing and red over what should go, press **Apply**. One stroke on an object
 is enough; the rest of the image stays as it was. Same thing over the API:
 
@@ -147,7 +147,7 @@ The withoutBG Open Weights Model (10.12.4, v4) is hosted at [withoutbg/withoutbg
 | `withoutbg-open-weights-backbone.onnx` | Shared DINOv3 ConvNeXt backbone: router logits and matting features |
 | `withoutbg-open-weights.onnx` | withoutBG matting (Depth Anything V2 small depth + ConvNeXt-fused matting) |
 | `birefnet-general.onnx` | BiRefNet segmentation |
-| `withoutbg-open-weights-stroke-edit.onnx` | Keep / Remove stroke-edit net (2.5 MB) |
+| `withoutbg-open-weights-stroke-edit.onnx` | Smart brush stroke-edit net (2.5 MB) |
 
 A trained router picks one branch per image. Fine strands, soft detail, and transparency go to the withoutBG matting branch. Hard opaque objects, flat scenes, and vehicles go to **BiRefNet**. Only the selected branch runs, and its alpha is upsampled to native resolution. The API reports the decision in the `X-Route-Category` / `X-Route-Pipeline` headers (`routeCategory` / `routePipeline` in JSON responses).
 

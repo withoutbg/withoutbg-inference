@@ -16,7 +16,7 @@ export interface ProcessorResult {
 
 export type ProcessorFn = (src: string) => Promise<ProcessorResult>;
 
-/** Keep / Remove masks (data URLs, white = painted) plus the matte being edited. */
+/** Smart brush masks (data URLs, white = painted) plus the matte being edited. */
 export interface EditRequest {
   image: string;
   keepMask: string | null;

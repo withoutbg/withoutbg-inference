@@ -159,7 +159,7 @@ class InferenceRuntime:
 
     @property
     def supports_edit(self) -> bool:
-        """True when the loaded bundle can apply Keep / Remove masks (10.12.4+)."""
+        """True when the loaded bundle can apply Smart brush masks (10.12.4+)."""
         return self._routed is not None and getattr(self._routed, "supports_edit", False)
 
     def edit_from_pil(
@@ -169,7 +169,7 @@ class InferenceRuntime:
         remove_mask: Image.Image | None = None,
         matte: Image.Image | None = None,
     ) -> InferenceResult:
-        """Keep / Remove edit (``edit.py``): masks and the optional previous matte
+        """Smart brush edit (``edit.py``): masks and the optional previous matte
         are images the size of *image* after EXIF orientation. Without *matte*
         the image is matted first.
 
@@ -179,9 +179,9 @@ class InferenceRuntime:
         if not self._ready:
             raise RuntimeError("Inference runtime is not loaded")
         if not self.supports_edit:
-            raise EditInputError("Keep / Remove needs a bundle with the stroke-edit graph (10.12.4+)")
+            raise EditInputError("Smart brush needs a bundle with the stroke-edit graph (10.12.4+)")
         if keep_mask is None and remove_mask is None:
-            raise EditInputError("A matte needs a keep_mask or remove_mask: send the Keep / Remove masks with it")
+            raise EditInputError("A matte needs a keep_mask or remove_mask: send the Smart brush masks with it")
 
         start = time.perf_counter()
         image = ImageOps.exif_transpose(image).convert("RGB")

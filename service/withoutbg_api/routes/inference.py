@@ -75,7 +75,7 @@ _REMOVE_BACKGROUND_RESPONSES = {
         },
     },
     422: {
-        "description": "Invalid Keep / Remove mask or matte, or the bundle has no stroke-edit graph",
+        "description": "Invalid Smart brush mask or matte, or the bundle has no stroke-edit graph",
         "content": {
             "application/json": {
                 "schema": {
@@ -114,7 +114,7 @@ EDIT_FIELDS = ("keep_mask", "remove_mask", "matte")
 
 
 async def _read_image_bytes(request: Request) -> tuple[bytes, dict[str, bytes]]:
-    """Image bytes plus any Keep / Remove fields (multipart only)."""
+    """Image bytes plus any Smart brush fields (multipart only)."""
     content_type = request.headers.get("content-type", "")
     if "multipart/form-data" in content_type:
         form = await request.form()
@@ -146,7 +146,7 @@ def _open_edit_images(extras: dict[str, bytes]) -> dict[str, Image.Image]:
 
 
 def _infer(runtime, image: Image.Image, extras: dict[str, bytes]):
-    """Plain removal, or the Keep / Remove edit when masks or a matte are sent."""
+    """Plain removal, or the Smart brush edit when masks or a matte are sent."""
     if not extras:
         return runtime.infer_from_pil(image)
     return runtime.edit_from_pil(image, **_open_edit_images(extras))

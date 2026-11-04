@@ -32,7 +32,7 @@ async function post(body: Record<string, string>): Promise<ProcessorResult> {
 
 export const apiProcessor: ProcessorFn = (src) => post({ image: src });
 
-/** Keep / Remove edit: the same endpoint with masks and the previous matte. */
+/** Smart brush edit: the same endpoint with masks and the previous matte. */
 export const apiEditor: EditFn = ({ image, keepMask, removeMask, matte }) => {
   const body: Record<string, string> = { image, matte };
   if (keepMask) body.keep_mask = keepMask;

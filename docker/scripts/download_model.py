@@ -61,7 +61,7 @@ def main() -> None:
     sidecar = json.loads(sidecar_path.read_text())
     if "pipeline" in sidecar:
         # Routed bundle: model_file is the matting graph; fetch the router, BiRefNet
-        # and (v4+) the Keep / Remove stroke-edit graph.
+        # and (v4+) the Smart brush stroke-edit graph.
         # The runtime validates the full sidecar again on load.
         for name in ("router", "birefnet", "stroke_edit"):
             if name not in sidecar:
