@@ -70,3 +70,16 @@ def test_edit_needs_server_key(monkeypatch):
     monkeypatch.delenv("WITHOUTBG_API_KEY", raising=False)
     with pytest.raises(cloud.CloudError):
         cloud.infer_edit(Image.new("RGB", (8, 8)), {"keep_mask": b""})
+
+
+def test_infer_routes_pro_strokes_to_infer_edit(monkeypatch, pro):
+    """engine=pro with strokes runs the stateless edit, not the plain Pro removal."""
+    from withoutbg_api.routes.inference import _infer
+
+    monkeypatch.setenv("WITHOUTBG_PRO_PASSWORD", "pw")
+    photo = Image.new("RGB", (64, 48), (10, 20, 30))
+    remove = Image.new("L", (64, 48), 0)
+    remove.paste(255, (40, 30, 60, 44))
+    result = _infer(None, photo, {"remove_mask": _png(remove)}, "pro", "pw", None)
+    assert set(pro["masks"]) == {"remove_mask"}
+    assert result.edit_context is None

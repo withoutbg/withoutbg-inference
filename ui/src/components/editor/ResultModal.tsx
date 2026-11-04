@@ -242,6 +242,8 @@ export default function ResultModal({
               error={editError}
               onApply={applyEdit}
               onCancel={() => setEditing(false)}
+              jobId={job.id}
+              pro={job.engine === "pro"}
             />
           ) : (
           <>

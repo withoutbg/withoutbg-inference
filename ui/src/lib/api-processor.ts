@@ -20,6 +20,10 @@ export function setEngine(engine: Engine, password = proPassword) {
   proPassword = password;
 }
 
+export function getEngine(): Engine {
+  return currentEngine;
+}
+
 export async function fetchProAvailable(): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE}/health`);
@@ -76,11 +80,20 @@ async function post(body: Record<string, string>, engine: Engine = "open"): Prom
 
 export const apiProcessor: ProcessorFn = (src) => post({ image: src }, currentEngine);
 
-/** Smart brush edit: the same endpoint with masks and the previous matte. */
-export const apiEditor: EditFn = ({ image, keepMask, removeMask, matte, editContext }) => {
+/**
+ * Smart brush edit: the same endpoint with masks. Open weights send the previous
+ * matte and edit_context; Pro sends the photo and all strokes so far (stateless).
+ */
+export const apiEditor: EditFn = ({ image, keepMask, removeMask, matte, editContext, engine }) => {
+  if (engine === "pro") {
+    const body: Record<string, string> = { image };
+    if (keepMask) body.keep_mask = keepMask;
+    if (removeMask) body.remove_mask = removeMask;
+    return post(body, "pro");
+  }
   const body: Record<string, string> = { image, matte };
   if (keepMask) body.keep_mask = keepMask;
   if (removeMask) body.remove_mask = removeMask;
   if (editContext) body.edit_context = editContext;
-  return post(body);
+  return post(body, "open");
 };

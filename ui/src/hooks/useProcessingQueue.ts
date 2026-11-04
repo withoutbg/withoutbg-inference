@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { generateMockAlphaMatte, compositeCutout } from "@/lib/mock-alpha";
-import { apiEditor, apiProcessor } from "@/lib/api-processor";
+import { apiEditor, apiProcessor, getEngine } from "@/lib/api-processor";
+import { clearProStrokes } from "@/lib/pro-strokes";
 import type { EditFn, ProcessorFn } from "@/lib/processor";
 import { incrementLifetimeProcessedCount, getLifetimeProcessedCount } from "@/lib/star-prompt";
 import type { ProcessingPhase } from "@/components/editor/ProcessingPreview";
@@ -25,6 +26,8 @@ export interface Job {
   alphaMatte: string | null;
   /** Smart brush: server token for this image, sent back with the next edit. */
   editContext: string | null;
+  /** Engine that made the current cutout (Pro edits resend all strokes). */
+  engine: "open" | "pro" | null;
   latencyMs: number | null;
   aspectRatio: number | null;
   error: string | null;
@@ -187,6 +190,7 @@ export function useProcessingQueue(
             processedImage: null,
             alphaMatte: null,
             editContext: null,
+            engine: null,
             latencyMs: null,
             aspectRatio: null,
             error: null,
@@ -221,6 +225,7 @@ export function useProcessingQueue(
   // ── Retry a failed job ───────────────────────────────────────────────────
 
   const retryJob = useCallback((id: string) => {
+    clearProStrokes(id);
     setJobs((prev) =>
       prev.map((j) =>
         j.id === id
@@ -241,6 +246,7 @@ export function useProcessingQueue(
         removeMask,
         matte: job.alphaMatte,
         editContext: job.editContext,
+        engine: job.engine ?? "open",
       });
       patchJob(job.id, {
         processedImage: result.processed,
@@ -277,6 +283,7 @@ export function useProcessingQueue(
 
         // Phase 2+3: run the processor (mock or real API)
         patchJob(id, { phase: "removing-bg" });
+        const engine = getEngine();
         const result = await processor(prepared);
 
         patchJob(id, { phase: "completing" });
@@ -287,6 +294,7 @@ export function useProcessingQueue(
           processedImage: result.processed,
           alphaMatte: result.alphaMatte,
           editContext: null,
+          engine,
           latencyMs: result.latencyMs,
           phase: null,
         });

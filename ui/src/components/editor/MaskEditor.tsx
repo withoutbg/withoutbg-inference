@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Eraser, Loader2, Minus, Plus, Undo2, Wand2 } from "lucide-react";
+import { getProStrokes, setProStrokes } from "@/lib/pro-strokes";
 
 export type BrushMode = "keep" | "remove";
 
@@ -20,6 +21,10 @@ interface MaskEditorProps {
   error: string | null;
   onApply: (masks: MaskEditorResult) => void;
   onCancel: () => void;
+  /** Job the strokes belong to (Pro keeps them per job). */
+  jobId: string;
+  /** Pro engine: every Apply resends all strokes, so they stay on the canvas. */
+  pro?: boolean;
 }
 
 const COLORS: Record<BrushMode, string> = {
@@ -67,6 +72,8 @@ export default function MaskEditor({
   error,
   onApply,
   onCancel,
+  jobId,
+  pro = false,
 }: MaskEditorProps) {
   const viewRef = useRef<HTMLCanvasElement>(null);
   // Strokes per mode, at the image's own size, painted opaque white.
@@ -93,11 +100,18 @@ export default function MaskEditor({
         c.height = img.naturalHeight;
         ref.current = c;
       }
+      // Pro: restore the job's strokes so the next Apply resends all of them.
+      const saved = pro ? getProStrokes(jobId) : undefined;
+      if (saved && saved.keep.width === img.naturalWidth && saved.keep.height === img.naturalHeight) {
+        keepRef.current!.getContext("2d")!.putImageData(saved.keep, 0, 0);
+        removeRef.current!.getContext("2d")!.putImageData(saved.remove, 0, 0);
+      }
       const view = viewRef.current;
       if (view) {
         view.width = img.naturalWidth;
         view.height = img.naturalHeight;
       }
+      redraw();
       // A sensible default brush: ~4% of the long side.
       setSize(Math.max(6, Math.round(Math.max(img.naturalWidth, img.naturalHeight) * 0.04)));
       undoRef.current = [];
@@ -108,6 +122,8 @@ export default function MaskEditor({
     return () => {
       alive = false;
     };
+    // Sized once per image; pro/jobId are read at mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [image]);
 
   const redraw = useCallback(() => {
@@ -211,15 +227,27 @@ export default function MaskEditor({
     const keepMask = maskDataUrl(keepRef.current!);
     const removeMask = maskDataUrl(removeRef.current!);
     if (!keepMask && !removeMask) return;
+    if (pro) {
+      // Keep the full stroke history: this Apply and every later one send it all.
+      const k = keepRef.current!;
+      const r = removeRef.current!;
+      setProStrokes(jobId, {
+        keep: k.getContext("2d")!.getImageData(0, 0, k.width, k.height),
+        remove: r.getContext("2d")!.getImageData(0, 0, r.width, r.height),
+      });
+    }
     onApply({ keepMask, removeMask });
   };
 
-  // Clear the strokes once the server returns the edited cutout.
+  // Clear the strokes once the server returns the edited cutout (open weights).
+  // Pro keeps them: the next Apply sends all of them again.
   const prevCutout = useRef(cutout);
   useEffect(() => {
     if (prevCutout.current !== cutout && keepRef.current && removeRef.current) {
-      for (const c of [keepRef.current, removeRef.current]) {
-        c.getContext("2d")!.clearRect(0, 0, c.width, c.height);
+      if (!pro) {
+        for (const c of [keepRef.current, removeRef.current]) {
+          c.getContext("2d")!.clearRect(0, 0, c.width, c.height);
+        }
       }
       undoRef.current = [];
       setUndoCount(0);
@@ -227,7 +255,7 @@ export default function MaskEditor({
       redraw();
     }
     prevCutout.current = cutout;
-  }, [cutout, redraw]);
+  }, [cutout, pro, redraw]);
 
   const modeButton = (m: BrushMode, label: string, dot: string) => (
     <button
@@ -324,6 +352,11 @@ export default function MaskEditor({
           >
             Done
           </button>
+          {pro && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Pro: 1 credit per Apply
+            </span>
+          )}
           <button
             onClick={apply}
             disabled={!dirty || busy}

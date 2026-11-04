@@ -87,7 +87,7 @@ docker run --rm -p 127.0.0.1:8080:8080 \
 
 > **Your credits, your server.** Pro calls are charged to your key, whoever sends them. That is why Pro stays off unless `WITHOUTBG_PRO_PASSWORD` is set, and every Pro request must send it (the UI asks once; API clients send `X-Pro-Password`). Keep the server private too: the `127.0.0.1:` port binding above allows access from this machine only. Don't expose a Pro-enabled server to the internet.
 
-The API takes `?engine=pro` on `POST /v1/remove-background`. Pro requests upload the image to api.withoutbg.com and use 1 credit each. Open-weights requests never leave the server. Smart brush always runs on the open weights. Keys: [withoutBG Pro](https://withoutbg.com/pro-model-api?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-api).
+The API takes `?engine=pro` on `POST /v1/remove-background`. Pro requests upload the image to api.withoutbg.com and use 1 credit each. Open-weights requests never leave the server. Smart brush runs on the open weights, or on Pro with `engine=pro`: each Pro edit sends the photo and every stroke so far (stateless, 1 credit per call). Keys: [withoutBG Pro](https://withoutbg.com/pro-model-api?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-api).
 
 ## Build
 

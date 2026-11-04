@@ -27,8 +27,13 @@ export interface EditRequest {
   keepMask: string | null;
   removeMask: string | null;
   matte: string;
-  /** `editContext` from the previous edit of this image, if any. */
+  /** `editContext` from the previous edit of this image, if any (open weights). */
   editContext?: string | null;
+  /**
+   * Engine that made the cutout. "pro" edits send the photo and every stroke so
+   * far (the caller passes all of them); the server keeps no state.
+   */
+  engine?: "open" | "pro";
 }
 
 export type EditFn = (req: EditRequest) => Promise<ProcessorResult>;
