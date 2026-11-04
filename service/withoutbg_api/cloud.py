@@ -22,6 +22,7 @@ from importlib.metadata import PackageNotFoundError, version
 
 from PIL import Image, ImageOps
 
+from withoutbg_openweights.edit import EditInputError, mask_from_image
 from withoutbg_openweights.runtime import InferenceResult
 
 API_URL = os.environ.get("WITHOUTBG_API_URL", "https://api.withoutbg.com").rstrip("/")
@@ -80,13 +81,19 @@ def user_agent() -> str:
     return f"withoutbg-inference/{ver} ({host}; {_device()})"
 
 
-def _multipart(png: bytes) -> tuple[bytes, str]:
+def _multipart(png: bytes, masks: dict[str, bytes] | None = None) -> tuple[bytes, str]:
+    """multipart body: the proxy as ``file`` plus optional Smart brush ``keep_mask`` / ``remove_mask`` PNGs."""
     boundary = uuid.uuid4().hex
-    body = (
-        f"--{boundary}\r\n"
-        'Content-Disposition: form-data; name="file"; filename="image.png"\r\n'
-        "Content-Type: image/png\r\n\r\n"
-    ).encode() + png + f"\r\n--{boundary}--\r\n".encode()
+    parts = {"file": png, **(masks or {})}
+    body = b""
+    for name, data in parts.items():
+        filename = "image.png" if name == "file" else f"{name}.png"
+        body += (
+            f"--{boundary}\r\n"
+            f'Content-Disposition: form-data; name="{name}"; filename="{filename}"\r\n'
+            "Content-Type: image/png\r\n\r\n"
+        ).encode() + data + b"\r\n"
+    body += f"--{boundary}--\r\n".encode()
     return body, f"multipart/form-data; boundary={boundary}"
 
 
@@ -98,8 +105,8 @@ _FRIENDLY = {
 }
 
 
-def _post_alpha(png: bytes, key: str) -> bytes:
-    body, content_type = _multipart(png)
+def _post_alpha(png: bytes, key: str, masks: dict[str, bytes] | None = None) -> bytes:
+    body, content_type = _multipart(png, masks)
     req = urllib.request.Request(f"{API_URL}/v1.0/alpha-channel", data=body, method="POST")
     req.add_header("Content-Type", content_type)
     req.add_header("X-API-Key", key)
@@ -130,6 +137,60 @@ def infer(image: Image.Image) -> InferenceResult:
     proxy.save(buf, format="PNG")
 
     alpha = Image.open(io.BytesIO(_post_alpha(buf.getvalue(), key))).convert("L")
+    if alpha.size != rgb.size:
+        alpha = alpha.resize(rgb.size, Image.Resampling.BILINEAR)
+
+    cutout = rgb.copy()
+    cutout.putalpha(alpha)
+    return InferenceResult(
+        cutout=cutout,
+        matte=alpha.convert("RGB"),
+        latency_ms=int((time.perf_counter() - start) * 1000),
+        route_pipeline="pro",
+    )
+
+
+_MASK_FIELDS = ("keep_mask", "remove_mask")
+
+
+def _proxy_mask(mask: Image.Image, photo: Image.Image, proxy_size: tuple[int, int]) -> bytes:
+    """A Smart brush mask at the proxy size as a binary PNG (nearest, so strokes stay hard)."""
+    marks = mask_from_image(mask, photo.size, "Mask")
+    img = Image.fromarray(marks.astype("uint8") * 255, mode="L")
+    if img.size != proxy_size:
+        img = img.resize(proxy_size, Image.Resampling.NEAREST)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def infer_edit(image: Image.Image, extras: dict[str, bytes]) -> InferenceResult:
+    """Smart brush via withoutBG Pro: the photo plus all strokes so far, one credit per call.
+
+    Stateless: the Pro API re-mattes the proxy and applies the strokes it gets, so
+    nothing is kept between calls. Any ``matte`` or ``edit_context`` sent by the
+    client is ignored.
+    """
+    key = api_key()
+    if key is None:
+        raise CloudError(400, "withoutBG Pro is not configured: set WITHOUTBG_API_KEY.")
+    if not any(name in extras for name in _MASK_FIELDS):
+        raise EditInputError("Pro Smart brush needs keep_mask and/or remove_mask.")
+
+    start = time.perf_counter()
+    rgb = ImageOps.exif_transpose(image).convert("RGB")
+    proxy = rgb.copy()
+    proxy.thumbnail((MAX_SIDE, MAX_SIDE), Image.Resampling.LANCZOS)
+    buf = io.BytesIO()
+    proxy.save(buf, format="PNG")
+
+    masks: dict[str, bytes] = {}
+    for name in _MASK_FIELDS:
+        if name in extras:
+            with Image.open(io.BytesIO(extras[name])) as raw:
+                masks[name] = _proxy_mask(raw.copy(), rgb, proxy.size)
+
+    alpha = Image.open(io.BytesIO(_post_alpha(buf.getvalue(), key, masks))).convert("L")
     if alpha.size != rgb.size:
         alpha = alpha.resize(rgb.size, Image.Resampling.BILINEAR)
 

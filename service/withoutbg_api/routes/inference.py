@@ -157,15 +157,16 @@ def _infer(runtime, image: Image.Image, extras: dict[str, bytes], engine: str = 
            pro_password: str | None = None, edit_context: str | None = None):
     """Plain removal, or the Smart brush edit when masks or a matte are sent.
 
-    *edit_context* (Smart brush only) is the token the previous edit returned.
+    *edit_context* (open weights Smart brush only) is the token the previous edit returned.
 
     ``engine="pro"`` sends the image to withoutBG Pro (opt-in, needs
-    ``WITHOUTBG_API_KEY``). Smart brush is open weights only.
+    ``WITHOUTBG_API_KEY``). Pro Smart brush sends the photo and all strokes each
+    time (stateless, 1 credit per call); any matte or edit_context is ignored.
     """
     if engine == "pro":
         cloud.check_password(pro_password)
         if extras:
-            raise EditInputError("Smart brush runs on the open weights; use engine=open.")
+            return cloud.infer_edit(image, extras)
         return cloud.infer(image)
     if not extras:
         return runtime.infer_from_pil(image)
@@ -201,7 +202,9 @@ async def remove_background(
             "open: local open weights (default). pro: withoutBG Pro via the hosted "
             "API, available only when the server has WITHOUTBG_API_KEY and "
             "WITHOUTBG_PRO_PASSWORD set; send the password in X-Pro-Password. The "
-            "image is uploaded to api.withoutbg.com and uses 1 credit."
+            "image is uploaded to api.withoutbg.com and uses 1 credit. Smart brush "
+            "with engine=pro sends the photo and every stroke so far each time (no "
+            "matte or edit_context)."
         ),
     ),
 ):
