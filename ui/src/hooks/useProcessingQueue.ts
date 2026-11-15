@@ -5,7 +5,7 @@ import { generateMockAlphaMatte, compositeCutout } from "@/lib/mock-alpha";
 import { apiEditor, apiProcessor, getEngine } from "@/lib/api-processor";
 import { clearProStrokes } from "@/lib/pro-strokes";
 import type { EditFn, ProcessorFn } from "@/lib/processor";
-import { incrementLifetimeProcessedCount, getLifetimeProcessedCount } from "@/lib/star-prompt";
+import { incrementLifetimeProcessedCount, getLifetimeProcessedCount } from "@/lib/conversion-prompt";
 import type { ProcessingPhase } from "@/components/editor/ProcessingPreview";
 
 // ---------------------------------------------------------------------------

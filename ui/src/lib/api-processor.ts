@@ -24,14 +24,15 @@ export function getEngine(): Engine {
   return currentEngine;
 }
 
-export async function fetchProAvailable(): Promise<boolean> {
+/** true: Pro is set up; false: server is up but Pro is not set up; null: unknown. */
+export async function fetchProAvailable(): Promise<boolean | null> {
   try {
     const response = await fetch(`${API_BASE}/health`);
-    if (!response.ok) return false;
+    if (!response.ok) return null;
     const data = (await response.json()) as { pro_available?: boolean };
     return data.pro_available === true;
   } catch {
-    return false;
+    return null;
   }
 }
 

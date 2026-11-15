@@ -3,15 +3,12 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { RotateCcw, Download, Upload } from "lucide-react";
 import JSZip from "jszip";
+import { compositeCutout } from "@/lib/mock-alpha";
 import { useProcessingQueue, MAX_BATCH } from "@/hooks/useProcessingQueue";
 import QueueGrid from "./QueueGrid";
 import ResultModal from "./ResultModal";
-import StarModal from "@/components/conversion/StarModal";
-import {
-  milestoneToShow,
-  starPromptComplete,
-  type StarMilestone,
-} from "@/lib/star-prompt";
+import ConversionPrompt from "@/components/conversion/ConversionPrompt";
+import { promptToShow, type Milestone } from "@/lib/conversion-prompt";
 import PasteShortcutKbd from "@/components/ui/PasteShortcutKbd";
 import { ProductLinks } from "@/components/ui/ProductLinks";
 
@@ -25,10 +22,9 @@ export default function BackgroundRemovalEditor() {
 
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const [starModalMilestone, setStarModalMilestone] = useState<StarMilestone | null>(null);
+  const [prompt, setPrompt] = useState<Milestone | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const shownStarMilestonesRef = useRef<Set<StarMilestone>>(new Set());
 
   const hasJobs = jobs.length > 0;
   const doneJobs = jobs.filter((j) => j.status === "done");
@@ -36,21 +32,16 @@ export default function BackgroundRemovalEditor() {
   const processingCount = jobs.filter((j) => j.status === "processing").length;
   const errorCount = jobs.filter((j) => j.status === "error").length;
 
-  // ── Star modal trigger ───────────────────────────────────────────────────
+  // ── Milestone prompt (star → Pro API → Self-Host) ────────────────────────
+  // Waits until processing pauses, so a batch shows one prompt at the end.
 
   useEffect(() => {
-    if (starPromptComplete()) return;
-
-    const milestone = milestoneToShow(
-      lifetimeProcessedCount,
-      shownStarMilestonesRef.current
-    );
-    if (!milestone) return;
-
-    shownStarMilestonesRef.current.add(milestone);
-    const t = setTimeout(() => setStarModalMilestone(milestone), 900);
+    if (prompt) return;
+    const next = promptToShow(lifetimeProcessedCount);
+    if (!next) return;
+    const t = setTimeout(() => setPrompt(next), 900);
     return () => clearTimeout(t);
-  }, [lifetimeProcessedCount]);
+  }, [lifetimeProcessedCount, prompt]);
 
   // ── File ingestion ───────────────────────────────────────────────────────
 
@@ -136,8 +127,10 @@ export default function BackgroundRemovalEditor() {
     const zip = new JSZip();
     const folder = zip.folder("withoutbg-results")!;
     for (const job of doneJobs) {
-      if (!job.processedImage) continue;
-      const base64 = job.processedImage.split(",")[1];
+      if (!job.alphaMatte) continue;
+      // Full resolution: original photo + matte scaled up to it.
+      const full = await compositeCutout(job.beforeImage, job.alphaMatte);
+      const base64 = full.split(",")[1];
       const base = job.fileName.replace(/\.[^.]+$/, "");
       folder.file(`${base}-withoutbg.png`, base64, { base64: true });
     }
@@ -156,7 +149,7 @@ export default function BackgroundRemovalEditor() {
     ? jobs.find((j) => j.id === selectedJobId) ?? null
     : null;
 
-  const openCompare = (id: string) => setSelectedJobId(id);
+  const openBrush = (id: string) => setSelectedJobId(id);
   const closeModal = () => setSelectedJobId(null);
 
   // ── Live region ───────────────────────────────────────────────────────────
@@ -301,7 +294,7 @@ export default function BackgroundRemovalEditor() {
       {hasJobs && (
         <QueueGrid
           jobs={jobs}
-          onCompare={openCompare}
+          onBrush={openBrush}
           onRemove={removeJob}
           onRetry={retryJob}
           onAddMore={() => inputRef.current?.click()}
@@ -323,11 +316,8 @@ export default function BackgroundRemovalEditor() {
           />
         )}
 
-      {starModalMilestone && (
-        <StarModal
-          milestone={starModalMilestone}
-          onClose={() => setStarModalMilestone(null)}
-        />
+      {prompt && (
+        <ConversionPrompt at={prompt.at} kind={prompt.kind} onClose={() => setPrompt(null)} />
       )}
     </div>
   );

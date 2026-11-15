@@ -3,9 +3,9 @@ import { HF_MODEL_URL } from "@/lib/reference-links";
 export const SITE_URL = "https://withoutbg.com"; // utm-ok: site() tags every link
 
 /** withoutbg.com link with this app's UTM tags (first-party measurement only). */
-export function site(path = "/"): string {
+export function site(path = "/", spot?: string): string {
   const clean = path.startsWith("/") ? path : `/${path}`;
-  const content = clean.replace(/^\/+|\/+$/g, "").replace(/\//g, "-") || "home";
+  const content = spot ?? (clean.replace(/^\/+|\/+$/g, "").replace(/\//g, "-") || "home");
   const params = new URLSearchParams({
     utm_source: "inference-app",
     utm_medium: "app",
@@ -14,6 +14,10 @@ export function site(path = "/"): string {
   });
   return `${SITE_URL}${clean}?${params.toString()}`;
 }
+
+/** Upgrade links; `spot` names the surface so each one is measurable on its own. */
+export const proApiUrl = (spot: string) => site("/pro-model-api", spot);
+export const proSelfHostUrl = (spot: string) => site("/pro-model-self-host", spot);
 export const LINK_URL = site("/");
 export const LICENSE_URL = site("/open-model/license");
 export const OSS_URL = "https://github.com/withoutbg/withoutbg-inference";
@@ -52,8 +56,8 @@ export const OPEN_MODEL_COMPARE_ITEMS: ProductLinkItem[] = [
     simple: true,
   },
   {
-    label: "vs Clipping Magic",
-    href: site("/compare/withoutbg-open-model-vs-clipping-magic"),
+    label: "vs Self-Host Pro Model",
+    href: site("/compare/withoutbg-open-model-vs-pro-model-self-host"),
     simple: true,
   },
 ];
@@ -92,6 +96,11 @@ export const OPEN_MODEL_LEFT_SECTIONS: ProductLinkSection[] = [
         href: site("/docs/open-model/docker"),
         icon: "devicon-docker-plain",
         current: true,
+      },
+      {
+        label: "Pro Model Self-Host",
+        href: site("/pro-model-self-host"),
+        lucideIcon: "battery-charging",
       },
     ],
   },
@@ -186,6 +195,29 @@ export const API_MODEL_SECTION_COLUMNS: ProductLinkSection[][] = [
 export const API_MODEL_SECTIONS: ProductLinkSection[] = [
   ...API_MODEL_LEFT_SECTIONS,
   API_MODEL_COMPARE_SECTION,
+];
+
+export const SELF_HOST_PRO_SECTIONS: ProductLinkSection[] = [
+  {
+    label: "Learn",
+    items: [
+      {
+        label: "Overview",
+        href: site("/pro-model-self-host"),
+        lucideIcon: "play",
+      },
+    ],
+  },
+  {
+    label: "Compare",
+    items: [
+      {
+        label: "vs Open Model",
+        href: site("/compare/withoutbg-open-model-vs-pro-model-self-host"),
+        simple: true,
+      },
+    ],
+  },
 ];
 
 export const API_MODEL_ITEMS: ProductLinkItem[] = API_MODEL_LEFT_SECTIONS.flatMap(

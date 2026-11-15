@@ -28,7 +28,7 @@ server runs only the Smart brush graph, not the full pipeline. A stale value is 
 ![Example 2](sample-results/open-weights/example2.png)
 ![Example 3](sample-results/open-weights/example3.png)
 
-**[Open Weights results →](https://withoutbg.com/open-model/results?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-open-model-results)** · **[Cloud API results →](https://withoutbg.com/pro-model/results?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-results)** · **[Compare →](https://withoutbg.com/compare/withoutbg-open-model-vs-pro-model?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-compare-withoutbg-open-model-vs-pro-model)**
+**[Open Weights results →](https://withoutbg.com/open-model/results?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-open-model-results)** · **[Cloud API results →](https://withoutbg.com/pro-model/results?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-results)** · **[vs Pro Model →](https://withoutbg.com/compare/withoutbg-open-model-vs-pro-model?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-compare-withoutbg-open-model-vs-pro-model)** · **[vs Self-Host Pro Model →](https://withoutbg.com/compare/withoutbg-open-model-vs-pro-model-self-host?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-compare-withoutbg-open-model-vs-pro-model-self-host)**
 
 ## Images
 
@@ -88,6 +88,20 @@ docker run --rm -p 127.0.0.1:8080:8080 \
 > **Your credits, your server.** Pro calls are charged to your key, whoever sends them. That is why Pro stays off unless `WITHOUTBG_PRO_PASSWORD` is set, and every Pro request must send it (the UI asks once; API clients send `X-Pro-Password`). Keep the server private too: the `127.0.0.1:` port binding above allows access from this machine only. Don't expose a Pro-enabled server to the internet.
 
 The API takes `?engine=pro` on `POST /v1/remove-background`. Pro requests upload the image to api.withoutbg.com and use 1 credit each. Open-weights requests never leave the server. Smart brush runs on the open weights, or on Pro with `engine=pro`: each Pro edit sends the photo and every stroke so far (stateless, 1 credit per call). Keys: [withoutBG Pro](https://withoutbg.com/pro-model-api?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-api).
+
+## Upgrade path: Pro Model Self-Host
+
+Already running this image and want sharper edges, with images still never leaving your network?
+**[Pro Model Self-Host](https://withoutbg.com/pro-model-self-host?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-self-host)** is this same open-weights model plus a refiner stage. It's built on these Dockerfiles and serves the same `POST /v1/remove-background` API, so you change the image and keep your integration. It runs on CPU servers.
+
+| | Open weights (this repo) | Pro Model Self-Host |
+|---|---|---|
+| Model | Open weights v4 | Open weights v4 + refiner (sharper edges) |
+| API | `/v1/remove-background` | Same |
+| Where it runs | Your server, CPU or GPU | Your CPU servers |
+| License | [Open weights license](https://withoutbg.com/open-model/license?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-open-model-license) | [Self-Host license](https://withoutbg.com/pro-model-self-host/license?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-self-host-license) |
+
+**[See Self-Host results →](https://withoutbg.com/pro-model-self-host/results?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-self-host-results)** · **[Compare with open weights →](https://withoutbg.com/compare/withoutbg-open-model-vs-pro-model-self-host?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-compare-withoutbg-open-model-vs-pro-model-self-host)**
 
 ## Build
 
@@ -150,6 +164,7 @@ This repo is the **self-host** path: HTTP API and browser UI on your own machine
 | **[GIMP plugin](https://github.com/withoutbg/withoutbg-gimp)** | You edit in GIMP 3 and want a private, mask-first workflow via Mac Local API or this Docker service |
 | **[Hugging Face](https://huggingface.co/withoutbg/withoutbg-openweights-onnx)** · **[Space](https://huggingface.co/spaces/withoutbg/withoutbg)** | You want to try a demo or download the ONNX weights directly |
 | **[Cloud API](https://withoutbg.com/pro-model?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model)** | You need maximum quality without running inference yourself |
+| **[Pro Model Self-Host](https://withoutbg.com/pro-model-self-host?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-self-host)** | You want Pro-level edges and Smart brush on your own CPU servers, with images never leaving your network |
 
 ```bash
 # In-process Python (no Docker)

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ENGINE_RESET_EVENT, type Engine, fetchProAvailable, setEngine } from "@/lib/api-processor";
+import { proApiUrl } from "@/lib/product-links";
 import { cn } from "@/lib/utils";
 
 const ENGINE_KEY = "wbg-engine";
@@ -25,12 +26,13 @@ function write(key: string, value: string) {
 }
 
 /**
- * Open weights / withoutBG Pro switch. Renders nothing unless the server has
- * WITHOUTBG_API_KEY and WITHOUTBG_PRO_PASSWORD set, so default installs never
- * see it. Picking Pro asks for the server's Pro password once.
+ * Open weights / withoutBG Pro switch. Live only when the server has
+ * WITHOUTBG_API_KEY and WITHOUTBG_PRO_PASSWORD set; picking Pro asks for the
+ * server's Pro password once. Without them, a "Pro" link explains how to turn
+ * it on and where to get a key.
  */
 export function EngineToggle() {
-  const [available, setAvailable] = useState(false);
+  const [available, setAvailable] = useState<boolean | null>(null);
   const [engine, setLocal] = useState<Engine>("open");
   const [asking, setAsking] = useState(false);
   const [draft, setDraft] = useState("");
@@ -38,8 +40,9 @@ export function EngineToggle() {
   useEffect(() => {
     let cancelled = false;
     fetchProAvailable().then((ok) => {
-      if (cancelled || !ok) return;
-      setAvailable(true);
+      if (cancelled) return;
+      setAvailable(ok);
+      if (!ok) return;
       const password = read(PASSWORD_KEY);
       if (read(ENGINE_KEY) === "pro" && password) {
         setLocal("pro");
@@ -57,7 +60,26 @@ export function EngineToggle() {
     };
   }, []);
 
-  if (!available) return null;
+  if (available === null) return null;
+
+  if (!available) {
+    return (
+      <a
+        href={proApiUrl("engine-toggle")}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="withoutBG Pro: higher-quality edges, 1 credit per image. To use it here, start the container with WITHOUTBG_API_KEY and WITHOUTBG_PRO_PASSWORD."
+        className="hidden sm:flex items-center gap-0.5 rounded-md bg-gray-100 p-0.5 text-xs font-medium dark:bg-gray-800"
+      >
+        <span className="rounded bg-white px-2 py-0.5 text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100">
+          Open weights
+        </span>
+        <span className="px-2 py-0.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors">
+          Pro ↗
+        </span>
+      </a>
+    );
+  }
 
   const choose = (next: Engine) => {
     if (next === "pro" && !read(PASSWORD_KEY)) {

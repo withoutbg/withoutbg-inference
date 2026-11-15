@@ -16,6 +16,10 @@ interface MaskEditorProps {
   image: string;
   /** Current cutout, shown under the strokes. */
   cutout: string;
+  /** Sharper cutout to show instead of `cutout` (e.g. full resolution). */
+  displayCutout?: string;
+  /** Never display wider than this many CSS px (the original image width). */
+  maxWidth?: number;
   aspectRatio: number;
   busy: boolean;
   error: string | null;
@@ -67,6 +71,8 @@ function maskDataUrl(src: HTMLCanvasElement): string | null {
 export default function MaskEditor({
   image,
   cutout,
+  displayCutout,
+  maxWidth,
   aspectRatio,
   busy,
   error,
@@ -87,6 +93,22 @@ export default function MaskEditor({
   const [dirty, setDirty] = useState(false);
   const [undoCount, setUndoCount] = useState(0);
   const imgSize = useRef({ w: 0, h: 0 });
+  // Largest view that fits the free area, capped at the original image size.
+  const areaRef = useRef<HTMLDivElement>(null);
+  const [view, setView] = useState<{ w: number; h: number } | null>(null);
+
+  useEffect(() => {
+    const el = areaRef.current;
+    if (!el) return;
+    const fit = () => {
+      const w = Math.min(el.clientWidth, el.clientHeight * aspectRatio, maxWidth ?? Infinity);
+      if (w > 0) setView({ w, h: w / aspectRatio });
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [aspectRatio, maxWidth]);
 
   // Size the stroke canvases to the image once it loads.
   useEffect(() => {
@@ -273,15 +295,16 @@ export default function MaskEditor({
   );
 
   return (
-    <div className="space-y-3">
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <div ref={areaRef} className="flex min-h-0 flex-1 items-center justify-center">
       <div
-        className="relative w-full overflow-hidden rounded-lg bg-checker select-none"
-        style={{ aspectRatio }}
+        className="relative overflow-hidden rounded-lg bg-checker select-none"
+        style={view ? { width: view.w, height: view.h } : { visibility: "hidden" }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={image} alt="" aria-hidden className="absolute inset-0 h-full w-full object-contain opacity-25" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={cutout} alt="Current cutout" className="absolute inset-0 h-full w-full object-contain" />
+        <img src={displayCutout ?? cutout} alt="Current cutout" className="absolute inset-0 h-full w-full object-contain" />
         <canvas
           ref={viewRef}
           aria-label="Paint Keep or Remove strokes"
@@ -298,6 +321,7 @@ export default function MaskEditor({
             <Loader2 className="h-6 w-6 animate-spin text-white" aria-hidden />
           </div>
         )}
+      </div>
       </div>
 
       <p className="text-xs text-gray-500 dark:text-gray-400">

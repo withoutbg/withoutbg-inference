@@ -7,7 +7,7 @@ import ImageCard from "./ImageCard";
 
 interface QueueGridProps {
   jobs: Job[];
-  onCompare: (id: string) => void;
+  onBrush: (id: string) => void;
   onRemove: (id: string) => void;
   onRetry: (id: string) => void;
   onAddMore: () => void;
@@ -16,7 +16,7 @@ interface QueueGridProps {
 
 export default function QueueGrid({
   jobs,
-  onCompare,
+  onBrush,
   onRemove,
   onRetry,
   onAddMore,
@@ -28,7 +28,7 @@ export default function QueueGrid({
         <ImageCard
           key={job.id}
           job={job}
-          onCompare={() => onCompare(job.id)}
+          onBrush={() => onBrush(job.id)}
           onRemove={() => onRemove(job.id)}
           onRetry={() => onRetry(job.id)}
         />

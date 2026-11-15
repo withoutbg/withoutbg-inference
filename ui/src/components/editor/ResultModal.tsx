@@ -1,57 +1,11 @@
 "use client";
 
 import { useEffect, useCallback, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight, Download, Brush } from "lucide-react";
-import ComparisonSlider from "./ComparisonSlider";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { compositeCutout } from "@/lib/mock-alpha";
+import { proApiUrl, proSelfHostUrl } from "@/lib/product-links";
 import MaskEditor, { type MaskEditorResult } from "./MaskEditor";
 import type { Job } from "@/hooks/useProcessingQueue";
-
-// ---------------------------------------------------------------------------
-// Background picker (same options as before)
-// ---------------------------------------------------------------------------
-
-type BgType = "checkerboard" | "white" | "black";
-
-const BG_OPTIONS: { type: BgType; label: string; preview: string }[] = [
-  { type: "checkerboard", label: "Transparent", preview: "bg-checker" },
-  { type: "white", label: "White", preview: "bg-white border border-gray-200 dark:border-gray-600" },
-  { type: "black", label: "Black", preview: "bg-gray-900" },
-];
-
-function BgToolbar({
-  active,
-  onChange,
-}: {
-  active: BgType;
-  onChange: (t: BgType) => void;
-}) {
-  return (
-    <div className="flex items-center gap-2" role="group" aria-label="Background style">
-      {BG_OPTIONS.map((opt) => (
-        <button
-          key={opt.type}
-          onClick={() => onChange(opt.type)}
-          aria-pressed={active === opt.type}
-          className={`flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition-colors ${
-            active === opt.type
-              ? "bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-          }`}
-        >
-          <span
-            className={`h-3.5 w-3.5 rounded-sm inline-block flex-shrink-0 ${opt.preview}`}
-            aria-hidden
-          />
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Image load helper for download
-// ---------------------------------------------------------------------------
 
 function loadImageEl(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -82,15 +36,30 @@ export default function ResultModal({
   onNavigate,
   onEdit,
 }: ResultModalProps) {
-  const [bg, setBg] = useState<BgType>("checkerboard");
-  const [editing, setEditing] = useState(false);
   const [editBusy, setEditBusy] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
 
+  // Full-resolution cutout for display; the editor caps the view at this size.
+  const [full, setFull] = useState<{ src: string; width: number; height: number } | null>(null);
+
   useEffect(() => {
-    setEditing(false);
     setEditError(null);
   }, [job.id]);
+
+  useEffect(() => {
+    let alive = true;
+    if (!job.alphaMatte) return;
+    (async () => {
+      const [src, orig] = await Promise.all([
+        compositeCutout(job.beforeImage, job.alphaMatte!),
+        loadImageEl(job.beforeImage),
+      ]);
+      if (alive) setFull({ src, width: orig.naturalWidth, height: orig.naturalHeight });
+    })().catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [job.beforeImage, job.alphaMatte]);
 
   const applyEdit = async ({ keepMask, removeMask }: MaskEditorResult) => {
     if (!onEdit) return;
@@ -122,13 +91,12 @@ export default function ResultModal({
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if (editing) return;
       if (e.key === "ArrowRight") goNext();
       if (e.key === "ArrowLeft") goPrev();
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [onClose, goNext, goPrev, editing]);
+  }, [onClose, goNext, goPrev]);
 
   // Trap scroll on body
   useEffect(() => {
@@ -142,31 +110,6 @@ export default function ResultModal({
     dialogRef.current?.focus();
   }, []);
 
-  const handleDownload = async () => {
-    if (!job.processedImage) return;
-    const img = await loadImageEl(job.processedImage);
-    const canvas = document.createElement("canvas");
-    canvas.width = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext("2d")!;
-    if (bg === "white") {
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    } else if (bg === "black") {
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-    ctx.drawImage(img, 0, 0);
-    const link = document.createElement("a");
-    link.href = canvas.toDataURL("image/png");
-    const base = job.fileName.replace(/\.[^.]+$/, "");
-    link.download = `${base}-withoutbg.png`;
-    link.click();
-  };
-
-  const bgClass =
-    bg === "white" ? "bg-white" : bg === "black" ? "bg-gray-900" : "bg-checker";
-
   if (!job.beforeImage || !job.processedImage || !job.alphaMatte) return null;
 
   return (
@@ -176,12 +119,12 @@ export default function ResultModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       aria-modal="true"
       role="dialog"
-      aria-label={`Result for ${job.fileName}`}
+      aria-label={`Smart brush for ${job.fileName}`}
     >
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="relative w-full max-w-3xl bg-wbg-page dark:bg-wbg-page rounded-xl border border-gray-200 dark:border-gray-700 shadow-2xl outline-none flex flex-col max-h-[90vh] overflow-hidden"
+        className="relative w-full h-[80vh] max-w-[80vw] w-[80vw] bg-wbg-page dark:bg-wbg-page rounded-xl border border-gray-200 dark:border-gray-700 shadow-2xl outline-none flex flex-col overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
@@ -231,57 +174,47 @@ export default function ResultModal({
           </div>
         </div>
 
-        {/* Comparison area */}
-        <div className="overflow-y-auto flex-1 p-4 space-y-3">
-          {editing && job.preparedImage ? (
+        {/* Smart brush */}
+        <div className="flex-1 min-h-0 p-4">
+          {job.preparedImage && (
             <MaskEditor
               image={job.preparedImage}
               cutout={job.processedImage}
+              displayCutout={full?.src}
+              maxWidth={full?.width}
               aspectRatio={job.aspectRatio ?? 4 / 3}
               busy={editBusy}
               error={editError}
               onApply={applyEdit}
-              onCancel={() => setEditing(false)}
+              onCancel={onClose}
               jobId={job.id}
               pro={job.engine === "pro"}
             />
-          ) : (
-          <>
-          <div className={`wbg-result-in overflow-hidden rounded-lg ${bgClass}`}>
-            <ComparisonSlider
-              before={job.beforeImage}
-              alphaMatte={job.alphaMatte}
-              altBefore="Original uploaded image"
-              altCutout="Background removed result"
-              aspectRatio={job.aspectRatio ?? 4 / 3}
-            />
-          </div>
-
-          {/* Controls row */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <BgToolbar active={bg} onChange={setBg} />
-            <div className="flex items-center gap-2">
-            {onEdit && job.preparedImage && (
-              <button
-                onClick={() => setEditing(true)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
-              >
-                <Brush className="h-4 w-4" aria-hidden />
-                Smart brush
-              </button>
-            )}
-            <button
-              onClick={handleDownload}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
-            >
-              <Download className="h-4 w-4" aria-hidden />
-              Download PNG
-            </button>
-            </div>
-          </div>
-          </>
           )}
         </div>
+
+        {/* Upgrade paths, shown on open-weights results only */}
+        {job.engine !== "pro" && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+            <span>Want sharper edges?</span>
+            <a
+              href={proApiUrl("result-modal-api")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+            >
+              Try withoutBG Pro API →
+            </a>
+            <a
+              href={proSelfHostUrl("result-modal-selfhost")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+            >
+              Same model + refiner on your servers: Pro Self-Host →
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

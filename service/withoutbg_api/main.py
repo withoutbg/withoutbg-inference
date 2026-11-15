@@ -15,6 +15,25 @@ from withoutbg_api.routes.licenses import router as licenses_router
 
 logger = logging.getLogger(__name__)
 
+PRO_API_URL = (
+    "https://withoutbg.com/pro-model-api?utm_source=inference-service&utm_medium=app"
+    "&utm_campaign=open-weights-v4&utm_content=inference-service-pro-model-api"
+)
+PRO_SELFHOST_URL = (
+    "https://withoutbg.com/pro-model-self-host?utm_source=inference-service&utm_medium=app"
+    "&utm_campaign=open-weights-v4&utm_content=inference-service-pro-model-self-host"
+)
+
+DESCRIPTION = f"""\
+ONNX inference API for withoutBG open weights background removal. Runs on this server; images stay here.
+
+Need sharper edges?
+- [withoutBG Pro API]({PRO_API_URL}): hosted, 1 credit per image. Set `WITHOUTBG_API_KEY` and
+  `WITHOUTBG_PRO_PASSWORD` to call it from here with `?engine=pro`.
+- [Pro Model Self-Host]({PRO_SELFHOST_URL}): this same model plus a refiner, on your own CPU servers.
+  Same `/v1/remove-background` API.
+"""
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -22,6 +41,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     runtime.load()
     app.state.runtime = runtime
     logger.info("withoutBG open weights API ready")
+    logger.info("Sharper edges: Pro API %s | Pro Self-Host %s", PRO_API_URL, PRO_SELFHOST_URL)
     yield
     app.state.runtime = None
 
@@ -29,7 +49,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     app = FastAPI(
         title="withoutBG Open Weights v4",
-        description="ONNX inference API for withoutBG open weights background removal",
+        description=DESCRIPTION,
         version="3.0.0",
         lifespan=lifespan,
     )

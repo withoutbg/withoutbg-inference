@@ -1,6 +1,8 @@
 "use client";
 
-import { Download, RefreshCcw, X, Search } from "lucide-react";
+import { useState } from "react";
+import { Brush, Download, Loader2, RefreshCcw, X } from "lucide-react";
+import { compositeCutout } from "@/lib/mock-alpha";
 import type { Job } from "@/hooks/useProcessingQueue";
 
 // ---------------------------------------------------------------------------
@@ -26,10 +28,12 @@ function phaseLabel(job: Job): string {
 // Download helper
 // ---------------------------------------------------------------------------
 
+/** Full-resolution cutout: the original photo with the matte scaled up to it. */
 async function downloadJob(job: Job) {
-  if (!job.processedImage) return;
+  if (!job.alphaMatte) return;
+  const href = await compositeCutout(job.beforeImage, job.alphaMatte);
   const link = document.createElement("a");
-  link.href = job.processedImage;
+  link.href = href;
   const base = job.fileName.replace(/\.[^.]+$/, "");
   link.download = `${base}-withoutbg.png`;
   link.click();
@@ -41,17 +45,26 @@ async function downloadJob(job: Job) {
 
 interface ImageCardProps {
   job: Job;
-  onCompare: () => void;
+  onBrush: () => void;
   onRemove: () => void;
   onRetry: () => void;
 }
 
 export default function ImageCard({
   job,
-  onCompare,
+  onBrush,
   onRemove,
   onRetry,
 }: ImageCardProps) {
+  const [saving, setSaving] = useState(false);
+  const save = async () => {
+    setSaving(true);
+    try {
+      await downloadJob(job);
+    } finally {
+      setSaving(false);
+    }
+  };
   const thumbnailSrc =
     job.status === "done" && job.processedImage
       ? job.processedImage
@@ -115,20 +128,25 @@ export default function ImageCard({
         {job.status === "done" && (
           <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-black/30">
             <button
-              onClick={onCompare}
-              aria-label={`Compare result for ${job.fileName}`}
-              className="inline-flex items-center gap-1 rounded-md bg-white/95 dark:bg-gray-900/95 px-2.5 py-1.5 text-xs font-medium text-gray-800 dark:text-gray-100 shadow hover:bg-white dark:hover:bg-gray-800 transition-colors"
+              onClick={onBrush}
+              aria-label={`Smart brush for ${job.fileName}`}
+              title="Smart brush"
+              className="inline-flex items-center rounded-md bg-white/95 dark:bg-gray-900/95 p-2 text-gray-800 dark:text-gray-100 shadow hover:bg-white dark:hover:bg-gray-800 transition-colors"
             >
-              <Search className="h-3 w-3" aria-hidden />
-              Compare
+              <Brush className="h-4 w-4" aria-hidden />
             </button>
             <button
-              onClick={() => downloadJob(job)}
+              onClick={save}
+              disabled={saving}
               aria-label={`Download ${job.fileName} cutout`}
-              className="inline-flex items-center gap-1 rounded-md bg-white/95 dark:bg-gray-900/95 px-2.5 py-1.5 text-xs font-medium text-gray-800 dark:text-gray-100 shadow hover:bg-white dark:hover:bg-gray-800 transition-colors"
+              title="Download full resolution"
+              className="inline-flex items-center rounded-md bg-white/95 dark:bg-gray-900/95 p-2 text-gray-800 dark:text-gray-100 shadow hover:bg-white dark:hover:bg-gray-800 transition-colors disabled:opacity-60"
             >
-              <Download className="h-3 w-3" aria-hidden />
-              Save
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              ) : (
+                <Download className="h-4 w-4" aria-hidden />
+              )}
             </button>
           </div>
         )}

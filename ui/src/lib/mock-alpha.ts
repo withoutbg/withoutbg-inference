@@ -3,7 +3,7 @@
  *
  * The matte is a grayscale RGB image (no alpha channel) where white pixels
  * represent the foreground subject and black pixels represent the background.
- * This matches the format the real API returns, so the ComparisonSlider and
+ * This matches the format the real API returns, so the
  * ProcessingPreview luminance-mask approach works identically.
  *
  * Strategy: soft radial gradient centered at 50/55% (head-room bias), scaled

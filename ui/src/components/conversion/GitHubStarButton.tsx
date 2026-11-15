@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 import { INFERENCE_REPO_URL } from "@/lib/reference-links";
-import { markStarPromptStarred } from "@/lib/star-prompt";
+import { markStarred } from "@/lib/conversion-prompt";
 
 const REPO_URL = INFERENCE_REPO_URL;
 const REPO_API = "https://api.github.com/repos/withoutbg/withoutbg-inference";
@@ -35,7 +35,7 @@ export function GitHubStarButton() {
       href={REPO_URL}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={() => markStarPromptStarred()}
+      onClick={() => markStarred()}
       className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:bg-gray-800/30"
       aria-label="Star withoutBG on GitHub"
     >

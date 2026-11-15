@@ -2,6 +2,8 @@ import Image from "next/image";
 import {
   LICENSE_URL,
   OSS_URL,
+  proApiUrl,
+  proSelfHostUrl,
   site,
   SUPPORT_URL,
 } from "@/lib/product-links";
@@ -14,7 +16,7 @@ export function AppFooter() {
   return (
     <footer className="bg-wbg-chrome text-gray-700 dark:text-gray-200 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           <div className="col-span-1">
             <div className="flex items-center mb-4">
               <Image
@@ -81,6 +83,32 @@ export function AppFooter() {
               <li>
                 <a href={site("/mac")} className={linkClass}>
                   Mac App
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          <nav aria-label="Footer upgrade" className="col-span-1">
+            <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+              Pro
+            </h2>
+            <ul className="space-y-2" role="list">
+              <li>
+                <a href={proApiUrl("footer-api")} className={linkClass}>
+                  Pro API
+                </a>
+              </li>
+              <li>
+                <a href={proSelfHostUrl("footer-selfhost")} className={linkClass}>
+                  Pro Self-Host
+                </a>
+              </li>
+              <li>
+                <a
+                  href={site("/compare/withoutbg-open-model-vs-pro-model-self-host", "footer-compare-selfhost")}
+                  className={linkClass}
+                >
+                  Open vs Self-Host Pro
                 </a>
               </li>
             </ul>

@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import {
   API_MODEL_SECTIONS,
   OPEN_MODEL_SECTIONS,
+  SELF_HOST_PRO_SECTIONS,
   type ProductLinkItem,
 } from "@/lib/product-links";
 import { ProductLinkIcon } from "@/components/ui/ProductLinkIcon";
@@ -108,7 +109,7 @@ function ApiModelItem({ item }: { item: ProductLinkItem }) {
 
 export function ProductLinks() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2">
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <section className="rounded-lg border border-gray-200 bg-wbg-surface dark:border-gray-800 dark:bg-wbg-chrome">
         <h2 className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-900 dark:border-gray-800 dark:text-gray-100">
           Open Model
@@ -136,6 +137,27 @@ export function ProductLinks() {
         </h2>
         <div className="py-1">
           {API_MODEL_SECTIONS.map((section, sectionIndex) => (
+            <div key={section.label}>
+              {sectionIndex > 0 && (
+                <div className="mx-3 my-1 border-t border-gray-200 dark:border-gray-700" />
+              )}
+              <div className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                {section.label}
+              </div>
+              {section.items.map((item) => (
+                <ApiModelItem key={item.label} item={item} />
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-gray-200 bg-wbg-surface dark:border-gray-800 dark:bg-wbg-chrome">
+        <h2 className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-900 dark:border-gray-800 dark:text-gray-100">
+          Pro Model Self-Host
+        </h2>
+        <div className="py-1">
+          {SELF_HOST_PRO_SECTIONS.map((section, sectionIndex) => (
             <div key={section.label}>
               {sectionIndex > 0 && (
                 <div className="mx-3 my-1 border-t border-gray-200 dark:border-gray-700" />
