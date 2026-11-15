@@ -33,7 +33,7 @@ const COPY: Record<PromptKind, Copy> = {
   },
   selfhost: {
     title: "Running this at scale?",
-    body: "Pro Model Self-Host is this same model plus a refiner for sharper edges. It runs on your own CPU servers, and images never leave your network.",
+    body: "Pro Model Self-Host is a sharper self-hosted model. It runs on your own CPU servers, and images never leave your network.",
     cta: { label: "See Pro Self-Host", href: proSelfHostUrl("prompt-100") },
     secondary: { label: "Donate", href: SUPPORT_URL },
   },

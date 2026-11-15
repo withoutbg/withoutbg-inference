@@ -211,7 +211,7 @@ export default function ResultModal({
               rel="noopener noreferrer"
               className="font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
             >
-              Same model + refiner on your servers: Pro Self-Host →
+              A sharper self-hosted model: Pro Self-Host →
             </a>
           </div>
         )}

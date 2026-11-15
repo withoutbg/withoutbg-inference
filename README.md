@@ -92,11 +92,11 @@ The API takes `?engine=pro` on `POST /v1/remove-background`. Pro requests upload
 ## Upgrade path: Pro Model Self-Host
 
 Already running this image and want sharper edges, with images still never leaving your network?
-**[Pro Model Self-Host](https://withoutbg.com/pro-model-self-host?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-self-host)** is this same open-weights model plus a refiner stage. It's built on these Dockerfiles and serves the same `POST /v1/remove-background` API, so you change the image and keep your integration. It runs on CPU servers.
+**[Pro Model Self-Host](https://withoutbg.com/pro-model-self-host?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-self-host)** is a sharper self-hosted model. It's built on these Dockerfiles and serves the same `POST /v1/remove-background` API, so you change the image and keep your integration. It runs on CPU servers.
 
 | | Open weights (this repo) | Pro Model Self-Host |
 |---|---|---|
-| Model | Open weights v4 | Open weights v4 + refiner (sharper edges) |
+| Model | Open weights v4 | Sharper self-hosted model |
 | API | `/v1/remove-background` | Same |
 | Where it runs | Your server, CPU or GPU | Your CPU servers |
 | License | [Open weights license](https://withoutbg.com/open-model/license?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-open-model-license) | [Self-Host license](https://withoutbg.com/pro-model-self-host/license?utm_source=github&utm_medium=readme&utm_campaign=open-weights-v4&utm_content=withoutbg-inference-pro-model-self-host-license) |

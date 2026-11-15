@@ -30,7 +30,7 @@ ONNX inference API for withoutBG open weights background removal. Runs on this s
 Need sharper edges?
 - [withoutBG Pro API]({PRO_API_URL}): hosted, 1 credit per image. Set `WITHOUTBG_API_KEY` and
   `WITHOUTBG_PRO_PASSWORD` to call it from here with `?engine=pro`.
-- [Pro Model Self-Host]({PRO_SELFHOST_URL}): this same model plus a refiner, on your own CPU servers.
+- [Pro Model Self-Host]({PRO_SELFHOST_URL}): a sharper self-hosted model, on your own CPU servers.
   Same `/v1/remove-background` API.
 """
 
